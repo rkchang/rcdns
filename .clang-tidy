@@ -13,7 +13,13 @@ portability-*,
 readability-*,
 -modernize-use-trailing-return-type,
 -cppcoreguidelines-avoid-magic-numbers,
+-hicpp-signed-bitwise,
+-readability-magic-numbers
+'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle:     google
+CheckOptions:    
+  - key:             readability-magic-numbers.IgnoredIntegerValues
+    value:           '1;2;3;4;5;6;7;8'

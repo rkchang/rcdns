@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 # Use Ccache
 find_program(CCACHE_PROGRAM ccache)
@@ -10,8 +10,11 @@ project(rcdns VERSION 1.0)
 
 include(src/CMakeLists.txt)
 
+# Available Build types
+set(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release Tsan Fuzz Coverage Profile)
+
 # -------------------------------
-# Add libraries
+# Libraries
 # -------------------------------
 include(FetchContent)
 
@@ -34,65 +37,101 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(googletest spdlog)
 
-#find_package(spdlog REQUIRED)
+# asio
+add_library(asio INTERFACE)
+target_include_directories(asio SYSTEM INTERFACE external/asio-1.20.0/include)
 
 
 # -------------------------------
-# Linters and static analyzers 
+# Compile Flags 
 # -------------------------------
-set(CMAKE_CXX_CLANG_TIDY clang-tidy)
-# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE iwyu)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
 # set ASAN options
 set(ENV{ASAN_OPTIONS} "strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_invalid_pointer_pairs=2")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(ENV{ASAN_OPTIONS} "\ 
+    strict_string_checks=1:\
+    detect_stack_use_after_return=1:\
+    check_initialization_order=1:\
+    strict_init_order=1:\
+    detect_invalid_pointer_pairs=2"
+  )
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debugger")
+  set(ENV{ASAN_OPTIONS} "\ 
+    detect_leaks=0:\ 
+    strict_string_checks=1:\
+    detect_stack_use_after_return=1:\
+    check_initialization_order=1:\
+    strict_init_order=1:\
+    detect_invalid_pointer_pairs=2"
+  )
+endif()
 
-# Run Sanitizers for debug builds
+# Debug builds
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} \
   -fsanitize=address \
   -fsanitize=leak \
   -fno-omit-frame-pointer \
   -fsanitize=undefined \
   -fsanitize=float-divide-by-zero \
-  -fsanitize=float-cast-overflow"
+  -fsanitize=float-cast-overflow \
+  -fno-optimize-sibling-calls \
+  -g"
 )
-set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined")
-add_executable(rcdns 
-  ${SRC_FILES}
+set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} \
+  -fsanitize=address,undefined \
+  -g"
 )
 
-# -------------------------------
-# Compile flags 
-# -------------------------------
+# Debugger builds - Leak sanitizer does not run under gdb
+set (CMAKE_CXX_FLAGS_DEBUGGER "${CMAKE_CXX_FLAGS_DEBUGGER} \
+  -fsanitize=undefined \
+  -g"
+)
 
-set(CMAKE_CXX_STANDARD 20)
+# Tsan builds
+set (CMAKE_CXX_FLAGS_TSAN "\
+  -fsanitize=thread \
+  -g"
+)
+set (CMAKE_EXE_LINKER_FLAGS_TSAN "\
+  -fsanitize=thread \
+  -g"
+)
+
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_executable(rcdns 
+  ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+  ${SRC_FILES}
+)
+
+# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE iwyu)
+set_target_properties(rcdns PROPERTIES 
+  CXX_CLANG_TIDY "clang-tidy"
+)
+
+# target_precompile_headers(rcdns PRIVATE 
+#   external/asio-1.20.0/include/asio.hpp
+#   <optional>
+#   <spdlog/spdlog.h>
+# )
+
 target_compile_options(rcdns 
   PRIVATE
-  -Walloca 
-  -Wcast-qual 
-  -Wconversion 
-  -Wformat=2 
-  -Wformat-security 
-  -Wnull-dereference 
-  -Wstack-protector 
-  -Wstrict-overflow=3 
-  -Wvla 
-  -Warray-bounds 
-  -Wfloat-equal 
-  -Wimplicit-fallthrough 
-  -Wpointer-arith 
-  -Wswitch-enum 
-  -D_FORTIFY_SOURCE=2
+  -Wall 
+  -Wextra 
+  -Wpedantic
   -fstack-protector-strong 
   -fPIE
 )
+
 target_link_libraries(rcdns
   PRIVATE 
-  gtest_main 
   spdlog::spdlog
+  asio
 )
 
 # -------------------------------
@@ -101,14 +140,24 @@ target_link_libraries(rcdns
 
 enable_testing()
 
-add_executable(
-  hello_test
-  ${TEST_FILES}
-)
-target_link_libraries(
-  hello_test
-  gtest_main
+add_executable(all_tests
+  ${TEST_FILES} 
+  ${SRC_FILES}
+  ${HPP_FILES}
 )
 
+# Disable clang-tidy for tests. google-test triggers too many warnings
+set_target_properties(all_tests PROPERTIES 
+  CXX_CLANG_TIDY ""
+)
+
+target_link_libraries(all_tests
+  gtest_main
+  spdlog::spdlog
+  asio
+)
+
+
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(all_tests)
+
