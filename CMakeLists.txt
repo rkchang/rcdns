@@ -11,7 +11,7 @@ project(rcdns VERSION 1.0)
 include(src/CMakeLists.txt)
 
 # Available Build types
-set(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release Tsan Fuzz Coverage Profile)
+set(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release Tsan)
 
 # -------------------------------
 # Libraries

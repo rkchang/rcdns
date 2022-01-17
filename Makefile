@@ -12,12 +12,6 @@ release:
 tsan:
 	mkdir build_tsan && cd build_tsan && cmake -G Ninja -DCMAKE_BUILD_TYPE=Tsan .. && ninja 
 
-fuzz:
-	mkdir build_fuzz && cd build_fuzz && cmake -G Ninja -DCMAKE_BUILD_TYPE=Fuzz .. && ninja 
-
-coverage:
-	mkdir build_coverage && cd build_coverage && cmake -G Ninja -DCMAKE_BUILD_TYPE=Coverage .. && ninja 
-
 # Create a development container
 container:
 	./tools/make_container.sh
