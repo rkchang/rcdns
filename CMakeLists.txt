@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(googletest spdlog)
 
 # asio
 add_library(asio INTERFACE)
-target_include_directories(asio SYSTEM INTERFACE external/asio-1.20.0/include)
+target_include_directories(asio SYSTEM INTERFACE external/asio/asio/include)
 
 
 # -------------------------------
@@ -114,7 +114,7 @@ set_target_properties(rcdns PROPERTIES
 )
 
 # target_precompile_headers(rcdns PRIVATE 
-#   external/asio-1.20.0/include/asio.hpp
+#   external/asio/include/asio.hpp
 #   <optional>
 #   <spdlog/spdlog.h>
 # )
