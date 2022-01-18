@@ -11,37 +11,70 @@
 #include "dns/DnsPacket.hpp"
 #include "dns/DnsRecord.hpp"
 
-Server::Server(asio::io_context& io, int port)
-    : socket_(io, udp::endpoint(udp::v4(), port)), recv_buffer_() {
+Server::Server(asio::io_context& io, int port, std::string& address)
+    : socket_(io, udp::endpoint(udp::v4(), port)),
+      server_endpoint_(asio::ip::make_address_v4(address), port),
+      recv_buffer_() {
   receive();
 }
-void Server::receive() {
-  socket_.async_receive_from(
-      asio::buffer(recv_buffer_), remote_endpoint_,
-      [this](std::error_code ec, std::size_t bytes_recvd) {
-        spdlog::info("Message received: ec: {}, size: {}", ec.message(),
-                     bytes_recvd);
-        spdlog::info("Message: {}", recv_buffer_);
-        if (!ec && bytes_recvd > 0) {
-          try {
-            BytePacketBuffer buffer{recv_buffer_};
-            DnsPacket packet{buffer};
-          } catch (std::exception& e) {
-            spdlog::info("Invalid packet {}", e.what());
-          }
-          respond();
-        } else {
-          spdlog::info("Invalid message");
-          receive();
-        }
-      });
+void Server::receive() { handle_query(); }
+
+std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
+  DnsPacket packet{};
+  packet.header_.id_ = 6666;
+  packet.header_.recursion_desired_ = true;
+  packet.header_.questions_ = 1;
+  DnsQuestion question{};
+  question.name_ = qname;
+  question.rtype_ = qtype;
+  question.rclass_ = RecordClass::IN;
+  packet.questions_.push_back(question);
+  std::array<uint8_t, 512> arr{};
+  BytePacketBuffer bpb{arr};
+  packet.write(bpb);
+
+  socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint_);
+
+  std::array<uint8_t, 512> recv_buffer{};
+  udp::endpoint sender_endpoint;
+  auto len = socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
+  spdlog::info("Packet of len {} received", len);
+  BytePacketBuffer recv_bpb{recv_buffer};
+  DnsPacket received_packet{recv_bpb};
+  spdlog::info("packet decoded");
+  return received_packet;
 }
 
-void Server::respond() {
-  socket_.async_send_to(asio::buffer(recv_buffer_), remote_endpoint_,
-                        [this](std::error_code ec, std::size_t bytes_sent) {
-                          spdlog::info("Message sent: ec: {}, size: {}",
-                                       ec.message(), bytes_sent);
-                          receive();
-                        });
+void Server::handle_query() {
+  std::array<uint8_t, 512> recv_buffer{};
+  udp::endpoint sender_endpoint;
+  socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
+  BytePacketBuffer bpb{recv_buffer};
+  DnsPacket request{bpb};
+  DnsPacket response{};
+  response.header_.id_ = request.header_.id_;
+  response.header_.recursion_desired_ = true;
+  response.header_.recursion_available_ = true;
+  response.header_.response_ = true;
+
+  if (!request.questions_.empty()) {
+    spdlog::info("Query received");
+    auto& question = request.questions_[0];
+    if (auto v = lookup(question.name_, question.rtype_)) {
+      auto& result = *v;
+      response.questions_.push_back(question);
+      response.header_.rescode_ = result.header_.rescode_;
+      response.answers_ = result.answers_;
+      response.authorities_ = result.authorities_;
+      response.resources_ = result.resources_;
+    } else {
+      response.header_.rescode_ = DnsHeader::ResultCode::SERVFAIL;
+    }
+  } else {
+    response.header_.rescode_ = DnsHeader::ResultCode::FORMERR;
+  }
+  std::array<uint8_t, 512> buffer{};
+  BytePacketBuffer response_buffer{buffer};
+  response.write(response_buffer);
+  socket_.send_to(asio::buffer(response_buffer.buffer_), sender_endpoint);
 }
