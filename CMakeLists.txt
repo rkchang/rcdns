@@ -113,11 +113,15 @@ set_target_properties(rcdns PROPERTIES
   CXX_CLANG_TIDY "clang-tidy"
 )
 
-# target_precompile_headers(rcdns PRIVATE 
-#   external/asio/include/asio.hpp
-#   <optional>
-#   <spdlog/spdlog.h>
-# )
+target_precompile_headers(rcdns PRIVATE 
+  external/asio/asio/include/asio.hpp
+  <optional>
+  <string>
+  <array>
+  <vector>
+  <spdlog/spdlog.h>
+  <spdlog/fmt/bundled/ranges.h>
+)
 
 target_compile_options(rcdns 
   PRIVATE
@@ -126,6 +130,11 @@ target_compile_options(rcdns
   -Wpedantic
   -fstack-protector-strong 
   -fPIE
+)
+
+target_link_options(rcdns
+  PRIVATE
+  -fuse-ld=lld
 )
 
 target_link_libraries(rcdns

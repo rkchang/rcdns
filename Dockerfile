@@ -14,6 +14,7 @@ RUN apt install -y \
     gcc \
     git \
     make \
+    lld \
     ninja-build \
     python3 \
     python3-pip \

@@ -12,6 +12,7 @@ ninja or GNU Make
 clang-tidy 
 ccache 
 cmake 
+lld
 ``` 
 
 ## Libraries
