@@ -3,7 +3,7 @@
 #include <spdlog/fmt/fmt.h>
 
 #include <stdexcept>
-DnsHeader::DnsHeader(BytePacketBuffer& buffer) {
+DnsHeader::DnsHeader(BytePacketBuffer &buffer) {
   id_ = buffer.read_u16();
   uint8_t flags_a = buffer.read();
   recursion_desired_ = (flags_a & (1 << 0)) > 0;
@@ -29,7 +29,7 @@ DnsHeader::DnsHeader(BytePacketBuffer& buffer) {
   resource_entries_ = buffer.read_u16();
 }
 
-void DnsHeader::write(BytePacketBuffer& buffer) const {
+void DnsHeader::write(BytePacketBuffer &buffer) const {
   buffer.write_u16(id_);
   buffer.write(static_cast<uint8_t>(recursion_desired_) |
                (static_cast<uint8_t>(truncated_message_) << 1) |
@@ -53,4 +53,20 @@ std::optional<DnsHeader::ResultCode> DnsHeader::rcode_from_num(int num) {
     return {};
   }
   return ResultCode(num);
+}
+std::ostream &operator<<(std::ostream &os, const DnsHeader &header) {
+  os << "["
+     << " id_: " << header.id_
+     << " recursion_desired_: " << header.recursion_desired_
+     << " truncated_message_: " << header.truncated_message_
+     << " authoritative_answer_: " << header.authoritative_answer_
+     << " opcode_: " << header.opcode_ << " response_: " << header.response_
+     << " rescode_: " << static_cast<int>(header.rescode_)
+     << " checking_disabled_: " << header.checking_disabled_
+     << " authed_data_: " << header.authed_data_ << " z_: " << header.z_
+     << " recursion_available_: " << header.recursion_available_
+     << " questions_: " << header.questions_ << " answers_: " << header.answers_
+     << " authoritative_entries_: " << header.authoritative_entries_
+     << " resource_entries_: " << header.resource_entries_ << "]";
+  return os;
 }

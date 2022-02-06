@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-DnsRecord::DnsRecord(BytePacketBuffer& buffer) {
+DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
   if (auto v = buffer.read_qname()) {
     domain_ = *v;
   } else {
@@ -96,7 +96,7 @@ DnsRecord::DnsRecord(BytePacketBuffer& buffer) {
   }
 }
 
-bool DnsRecord::write(BytePacketBuffer& buffer) const {
+bool DnsRecord::write(BytePacketBuffer &buffer) const {
   buffer.write_qname(domain_);
   buffer.write_u16(static_cast<int>(rtype_));
   buffer.write_u16(static_cast<uint16_t>(RecordClass::IN));
@@ -166,4 +166,48 @@ bool DnsRecord::write(BytePacketBuffer& buffer) const {
     }
   }
   return true;
+}
+
+std::ostream &operator<<(std::ostream &os, const DnsRecord::AData &payload) {
+  os << "["
+     << " ip: " << payload.ip.to_string() << "]";
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const DnsRecord::NSData &payload) {
+  os << "["
+     << " host: " << payload.host << "]";
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const DnsRecord::CNAMEData &payload) {
+  os << "["
+     << " host: " << payload.host << "]";
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const DnsRecord::MXData &payload) {
+  os << "["
+     << " priority: " << payload.priority << " host: " << payload.host << "]";
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const DnsRecord::AAAAData &payload) {
+  os << "["
+     << " ip: " << payload.ip.to_string() << "]";
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const DnsRecord &record) {
+  os << "["
+     << " domain_: " << record.domain_
+     << " rtype_: " << static_cast<int>(record.rtype_)
+     << " rclass_: " << static_cast<int>(record.rclass_)
+     << " ttl_: " << record.ttl_ << " data_len_: " << record.data_len_ << "]"
+     << " data_: ";
+  if (auto v = record.data_) {
+    std::visit([&os](auto &d) { os << d; }, *v);
+  }
+  return os;
 }

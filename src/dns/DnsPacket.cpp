@@ -43,3 +43,33 @@ void DnsPacket::write(BytePacketBuffer& buffer) {
     record.write(buffer);
   }
 }
+std::ostream& operator<<(std::ostream& os, const DnsPacket& packet) {
+  os << "[\n"
+     << " header_: " << packet.header_ << "\n"
+     << " questions_: [";
+  for (const auto& elem : packet.questions_) {
+    os << elem;
+  }
+  os << "]\n";
+
+  os << " answers_: [";
+  for (const auto& elem : packet.answers_) {
+    os << elem;
+  }
+  os << "]\n";
+
+  os << " authorities_: [";
+  for (const auto& elem : packet.authorities_) {
+    os << elem;
+  }
+  os << "]\n";
+
+  os << " resources_: [";
+  for (const auto& elem : packet.resources_) {
+    os << elem;
+  }
+  os << "]\n";
+
+  os << "]\n";
+  return os;
+}
