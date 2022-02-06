@@ -13,7 +13,7 @@
 
 Server::Server(asio::io_context& io, int port, std::string& address)
     : socket_(io, udp::endpoint(udp::v4(), port)),
-      server_endpoint_(asio::ip::make_address_v4(address), port),
+      server_endpoint_(asio::ip::make_address_v4(address), 53),
       recv_buffer_() {
   receive();
 }
@@ -33,6 +33,9 @@ std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
   BytePacketBuffer bpb{arr};
   packet.write(bpb);
 
+  std::ostringstream oss;
+  oss << packet;
+  spdlog::debug("packet: {}", oss.str());
   socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint_);
 
   std::array<uint8_t, 512> recv_buffer{};
@@ -42,6 +45,11 @@ std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
   BytePacketBuffer recv_bpb{recv_buffer};
   DnsPacket received_packet{recv_bpb};
   spdlog::info("packet decoded");
+
+  std::ostringstream received_packet_oss{};
+  received_packet_oss << received_packet;
+  spdlog::debug("received_packet: {}", received_packet_oss.str());
+
   return received_packet;
 }
 
@@ -51,6 +59,11 @@ void Server::handle_query() {
   socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
   BytePacketBuffer bpb{recv_buffer};
   DnsPacket request{bpb};
+
+  std::ostringstream oss;
+  oss << request;
+  spdlog::debug("request: {}", oss.str());
+
   DnsPacket response{};
   response.header_.id_ = request.header_.id_;
   response.header_.recursion_desired_ = true;
@@ -76,5 +89,10 @@ void Server::handle_query() {
   std::array<uint8_t, 512> buffer{};
   BytePacketBuffer response_buffer{buffer};
   response.write(response_buffer);
+
+  std::ostringstream response_oss{};
+  response_oss << response;
+  spdlog::debug("response: {}", response_oss.str());
+
   socket_.send_to(asio::buffer(response_buffer.buffer_), sender_endpoint);
 }
