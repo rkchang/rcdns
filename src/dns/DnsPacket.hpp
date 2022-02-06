@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -11,8 +12,9 @@
 class DnsPacket {
  public:
   DnsPacket() = default;
-  DnsPacket(BytePacketBuffer& buffer);
-  void write(BytePacketBuffer& buffer);
+  DnsPacket(BytePacketBuffer &buffer);
+  void write(BytePacketBuffer &buffer);
+  friend std::ostream &operator<<(std::ostream &os, const DnsPacket &packet);
 
   DnsHeader header_;
   std::vector<DnsQuestion> questions_;

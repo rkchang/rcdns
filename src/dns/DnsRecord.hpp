@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <variant>
+#include <ostream>
 
 #include "BytePacketBuffer.hpp"
 #include "RecordClass.hpp"
@@ -32,6 +33,7 @@ class DnsRecord {
 
   DnsRecord(BytePacketBuffer& buffer);
   bool write(BytePacketBuffer& buffer) const;
+  friend std::ostream &operator<<(std::ostream &os, const DnsRecord &record);
 
   std::string domain_;
   RecordType rtype_;

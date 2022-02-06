@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <ostream>
 
 #include "BytePacketBuffer.hpp"
 
@@ -19,6 +20,7 @@ class DnsHeader {
   DnsHeader(BytePacketBuffer& buffer);
   void write(BytePacketBuffer& buffer) const;
   static std::optional<ResultCode> rcode_from_num(int num);
+  friend std::ostream &operator<<(std::ostream &os, const DnsHeader &header);
 
   uint16_t id_;
   bool recursion_desired_;
@@ -32,7 +34,6 @@ class DnsHeader {
   bool authed_data_;
   bool z_;
   bool recursion_available_;
-
   uint16_t questions_;
   uint16_t answers_;
   uint16_t authoritative_entries_;
