@@ -2,21 +2,18 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "Debugger build",
+            "label": "2-Debugger build",
             "command": "ninja",
             "args": [],
             "options": {
                 "cwd": "${workspaceFolder}/build_debugger"
             },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "detail": "Build an executable for gdb"
         },
         {
             "type": "cppbuild",
-            "label": "Debug build",
+            "label": "1-Debug build",
             "command": "ninja",
             "args": [],
             "options": {

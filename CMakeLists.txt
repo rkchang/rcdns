@@ -109,9 +109,9 @@ add_executable(rcdns
 )
 
 # set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE iwyu)
-set_target_properties(rcdns PROPERTIES 
-  CXX_CLANG_TIDY "clang-tidy"
-)
+# set_target_properties(rcdns PROPERTIES 
+#   CXX_CLANG_TIDY "clang-tidy"
+# )
 
 target_precompile_headers(rcdns PRIVATE 
   external/asio/asio/include/asio.hpp
@@ -156,9 +156,9 @@ add_executable(all_tests
 )
 
 # Disable clang-tidy for tests. google-test triggers too many warnings
-set_target_properties(all_tests PROPERTIES 
-  CXX_CLANG_TIDY ""
-)
+# set_target_properties(all_tests PROPERTIES 
+#   CXX_CLANG_TIDY ""
+# )
 
 target_link_libraries(all_tests
   gtest_main

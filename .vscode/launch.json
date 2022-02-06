@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/build_debugger/rcdns",
             "args": [
-                "4532"
+                "44532",
+                "8.8.8.8"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -24,7 +25,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "Debugger build",
+            "preLaunchTask": "2-Debugger build",
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
@@ -45,7 +46,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "Debugger build",
+            "preLaunchTask": "2-Debugger build",
             "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
