@@ -1,7 +1,6 @@
 #include "Server.hpp"
 
-#include <spdlog/fmt/bundled/ranges.h>
-#include <spdlog/spdlog.h>
+#include <glog/logging.h>
 
 #include <iostream>
 #include <stdexcept>
@@ -17,7 +16,11 @@ Server::Server(asio::io_context& io, int port, std::string& address)
       recv_buffer_() {
   receive();
 }
-void Server::receive() { handle_query(); }
+void Server::receive() {
+  while (true) {
+    handle_query();
+  }
+}
 
 std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
   DnsPacket packet{};
@@ -33,22 +36,18 @@ std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
   BytePacketBuffer bpb{arr};
   packet.write(bpb);
 
-  std::ostringstream oss;
-  oss << packet;
-  spdlog::debug("packet: {}", oss.str());
+  DLOG(INFO) << "packet: " << packet;
   socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint_);
 
   std::array<uint8_t, 512> recv_buffer{};
   udp::endpoint sender_endpoint;
   auto len = socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
-  spdlog::info("Packet of len {} received", len);
+  DLOG(INFO) << "Packet of len " << len << "received";
   BytePacketBuffer recv_bpb{recv_buffer};
   DnsPacket received_packet{recv_bpb};
-  spdlog::info("packet decoded");
+  DLOG(INFO) << "Packet Decoded";
 
-  std::ostringstream received_packet_oss{};
-  received_packet_oss << received_packet;
-  spdlog::debug("received_packet: {}", received_packet_oss.str());
+  DLOG(INFO) << "received_packet: " << received_packet;
 
   return received_packet;
 }
@@ -60,9 +59,7 @@ void Server::handle_query() {
   BytePacketBuffer bpb{recv_buffer};
   DnsPacket request{bpb};
 
-  std::ostringstream oss;
-  oss << request;
-  spdlog::debug("request: {}", oss.str());
+  DLOG(INFO) << "request: " << request;
 
   DnsPacket response{};
   response.header_.id_ = request.header_.id_;
@@ -71,7 +68,7 @@ void Server::handle_query() {
   response.header_.response_ = true;
 
   if (!request.questions_.empty()) {
-    spdlog::info("Query received");
+    DLOG(INFO) << "Query received";
     auto& question = request.questions_[0];
     if (auto v = lookup(question.name_, question.rtype_)) {
       auto& result = *v;
@@ -90,9 +87,7 @@ void Server::handle_query() {
   BytePacketBuffer response_buffer{buffer};
   response.write(response_buffer);
 
-  std::ostringstream response_oss{};
-  response_oss << response;
-  spdlog::debug("response: {}", response_oss.str());
+  DLOG(INFO) << "response: " << response;
 
   socket_.send_to(asio::buffer(response_buffer.buffer_), sender_endpoint);
 }

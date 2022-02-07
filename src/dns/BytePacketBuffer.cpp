@@ -1,6 +1,6 @@
 #include "BytePacketBuffer.hpp"
 
-#include <spdlog/spdlog.h>
+#include <glog/logging.h>
 
 #include <stdexcept>
 #include <string_view>
@@ -61,7 +61,7 @@ std::optional<std::string> BytePacketBuffer::read_qname() {
   while (true) {
     // Handle jump loops
     if (jumps_performed > max_jumps) {
-      spdlog::info("Jump loop detected");
+      LOG(WARNING) << "Jump loop detected";
       return {};
     }
     uint16_t len = get(cur_pos);

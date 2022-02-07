@@ -1,5 +1,4 @@
-#include <spdlog/fmt/bundled/ranges.h>
-#include <spdlog/spdlog.h>
+#include <glog/logging.h>
 
 #include <array>
 #include <cstdint>
@@ -15,14 +14,13 @@
 
 // int main() {
 int main(int argc, char* argv[]) {
-  spdlog::set_level(spdlog::level::debug);
+  google::InitGoogleLogging(argv[0]);
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  FLAGS_logtostderr = 1;
+
   // TODO(rkchang) : Use proper library
   std::vector<std::string> args(argv, argv + argc);
-  spdlog::debug("args {}", args);
-  if (args.size() < 3) {
-    spdlog::info("Insufficient arguements");
-    return -1;
-  }
+  CHECK(args.size() >= 3) << "Insufficient arguments";
   int port = std::stoi(args[1]);
   asio::io_context io;
   Server server{io, port, args[2]};

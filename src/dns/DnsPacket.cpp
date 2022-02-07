@@ -1,7 +1,5 @@
 #include "DnsPacket.hpp"
 
-#include <spdlog/fmt/fmt.h>
-
 #include <ostream>
 
 #include "BytePacketBuffer.hpp"

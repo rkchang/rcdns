@@ -1,6 +1,6 @@
 #include "DnsRecord.hpp"
 
-#include <spdlog/spdlog.h>
+#include <glog/logging.h>
 
 #include <stdexcept>
 
@@ -82,7 +82,7 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
       break;
     }
     case RecordType::OPT: {
-      spdlog::info("Unhandled record encountered, dropping");
+      LOG(INFO) << "Unhandled record encountered, dropping";
       break;
     }
     case RecordType::UNKNOWN: {
@@ -90,8 +90,7 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
       break;
     }
     default: {
-      throw std::runtime_error(
-          fmt::format("No match for record type {}", rtype_));
+      LOG(FATAL) << "No matching case for record type";
     }
   }
 }
@@ -159,9 +158,7 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
       break;
     }
     default: {
-      spdlog::critical("No matching case");
-      throw std::runtime_error(
-          fmt::format("No match for record type {}", rtype_));
+      LOG(FATAL) << "No matching case for record type";
       break;
     }
   }
@@ -204,10 +201,11 @@ std::ostream &operator<<(std::ostream &os, const DnsRecord &record) {
      << " domain_: " << record.domain_
      << " rtype_: " << static_cast<int>(record.rtype_)
      << " rclass_: " << static_cast<int>(record.rclass_)
-     << " ttl_: " << record.ttl_ << " data_len_: " << record.data_len_ << "]"
+     << " ttl_: " << record.ttl_ << " data_len_: " << record.data_len_
      << " data_: ";
   if (auto v = record.data_) {
     std::visit([&os](auto &d) { os << d; }, *v);
   }
+  os << "]";
   return os;
 }
