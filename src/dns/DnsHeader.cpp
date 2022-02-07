@@ -1,7 +1,5 @@
 #include "DnsHeader.hpp"
 
-#include <spdlog/fmt/fmt.h>
-
 #include <stdexcept>
 DnsHeader::DnsHeader(BytePacketBuffer &buffer) {
   id_ = buffer.read_u16();

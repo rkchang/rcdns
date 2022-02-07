@@ -1,6 +1,6 @@
 #include "DnsQuestion.hpp"
 
-#include <spdlog/spdlog.h>
+#include <glog/logging.h>
 
 #include <stdexcept>
 
@@ -16,7 +16,7 @@ DnsQuestion::DnsQuestion(BytePacketBuffer &buffer) {
     throw std::runtime_error("Invalid record type");
   }
   if (rtype_ == RecordType::OPT) {
-    spdlog::info("Pseudo resource records not supported");
+    LOG(INFO) << "Pseudo resource records not supported";
     return;
   }
   if (buffer.read_u16() != static_cast<uint16_t>(RecordClass::IN)) {
