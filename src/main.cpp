@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <spdlog/fmt/bundled/ranges.h>
 #include <spdlog/spdlog.h>
 
@@ -15,6 +16,10 @@
 
 // int main() {
 int main(int argc, char* argv[]) {
+  google::InitGoogleLogging(argv[0]);
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  FLAGS_logtostderr = 1;
+
   spdlog::set_level(spdlog::level::debug);
   // TODO(rkchang) : Use proper library
   std::vector<std::string> args(argv, argv + argc);

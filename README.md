@@ -17,13 +17,12 @@ lld
 
 ## Libraries
 
-All the libraries used in the project should be downloaded automatically by
-cmake during the build process or are already included as git submodules.
-
 ```
 spdlog
 ASIO (non-Boost)
 googletest
+libgflags-dev 
+libgoogle-glog-dev
 ```
 
 ## Building the project 
@@ -35,6 +34,7 @@ Makefile, the following commands should create a debug build of the project for
 you. 
 
 ``` 
+sudo apt install libgflags-dev libgoogle-glog-dev
 mkdir build_debug 
 cd build_debug 
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug .. 

@@ -35,7 +35,17 @@ FetchContent_Declare(
   GIT_TAG v1.9.2
 )
 
+# FetchContent_Declare(fmt
+#   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+#   GIT_TAG 8.1.1
+# )
+
 FetchContent_MakeAvailable(googletest spdlog)
+# FetchContent_MakeAvailable(googletest fmt)
+
+# glog
+find_package(glog 0.5.0 REQUIRED)
+find_package(gflags REQUIRED)
 
 # asio
 add_library(asio INTERFACE)
@@ -140,7 +150,9 @@ target_link_options(rcdns
 target_link_libraries(rcdns
   PRIVATE 
   spdlog::spdlog
+  # fmt::fmt
   asio
+  glog::glog
 )
 
 # -------------------------------
@@ -163,6 +175,7 @@ add_executable(all_tests
 target_link_libraries(all_tests
   gtest_main
   spdlog::spdlog
+  # fmt::fmt
   asio
 )
 
