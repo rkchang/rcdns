@@ -1,16 +1,16 @@
 all: debug relase tsan fuzz coverage container
 
 debug:
-	mkdir build_debug && cd build_debug && cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug .. && ninja 
+	mkdir build_debug && cd build_debug && cmake -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DABSL_PROPAGATE_CXX_STD=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug .. && ninja
 
 debugger:
-	mkdir build_debugger && cd build_debugger && cmake -G Ninja -DCMAKE_BUILD_TYPE=Debugger .. && ninja 
+	mkdir build_debugger && cd build_debugger && cmake -G Ninja -DABSL_BUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debugger .. && ninja 
 
 release:
-	mkdir build_release && cd build_release && cmake -G Ninja -DCMAKE_BUILD_TYPE=Release .. && ninja 
+	mkdir build_release && cd build_release && cmake -G Ninja -DABSL_BUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release .. && ninja 
 
 tsan:
-	mkdir build_tsan && cd build_tsan && cmake -G Ninja -DCMAKE_BUILD_TYPE=Tsan .. && ninja 
+	mkdir build_tsan && cd build_tsan && cmake -G Ninja -DABSL_BUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Tsan .. && ninja 
 
 # Create a development container
 container:
