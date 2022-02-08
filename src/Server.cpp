@@ -16,6 +16,7 @@ Server::Server(asio::io_context& io, int port, std::string& address)
       recv_buffer_() {
   receive();
 }
+
 void Server::receive() {
   while (true) {
     handle_query();

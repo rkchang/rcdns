@@ -21,8 +21,8 @@ lld
 spdlog
 ASIO (non-Boost)
 googletest
-libgflags-dev 
 libgoogle-glog-dev
+abseil
 ```
 
 ## Building the project 
@@ -34,10 +34,10 @@ Makefile, the following commands should create a debug build of the project for
 you. 
 
 ``` 
-sudo apt install libgflags-dev libgoogle-glog-dev
+sudo apt install libgoogle-glog-dev
 mkdir build_debug 
 cd build_debug 
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug .. 
+cmake -G Ninja -DABSL_PROPAGATE_CXX_STD=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug .. 
 ninja 
 ```
 
