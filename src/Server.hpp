@@ -7,18 +7,20 @@
 
 #include "dns/DnsPacket.hpp"
 
-using asio::ip::udp;
 class Server {
  private:
   void handle_query();
-  std::optional<DnsPacket> lookup(std::string& qname, RecordType qtype);
+  std::optional<DnsPacket> lookup(std::string& qname, RecordType qtype,
+                                  asio::ip::address_v4 server_addr);
+  std::optional<DnsPacket> recursive_lookup(std::string& qname,
+                                            RecordType qtype);
 
  public:
-  Server(asio::io_context& io_context, int port, std::string& address);
+  Server(asio::io_context& io_context, int port, asio::ip::address_v4& address);
   void receive();
   void respond();
-  udp::socket socket_;
-  udp::endpoint remote_endpoint_;
-  udp::endpoint server_endpoint_;
+  asio::ip::udp::socket socket_;
+  asio::ip::udp::endpoint remote_endpoint_;
+  asio::ip::address_v4 ns_addr_;
   std::array<uint8_t, 512> recv_buffer_;
 };

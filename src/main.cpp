@@ -1,6 +1,7 @@
 #include <glog/logging.h>
 
 #include <array>
+#include <asio.hpp>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -77,14 +78,15 @@ ABSL_FLAG(PortNumber, port, PortNumber(44532), "What port to listen on");
 ABSL_FLAG(Ipv4Address, addr, Ipv4Address("8.8.8.8"), "What DNS server to use");
 
 int main(int argc, char* argv[]) {
-  google::InitGoogleLogging(argv[0]);
+  google::InitGoogleLogging(argv[0]);  // NOLINT
   absl::ParseCommandLine(argc, argv);
-  FLAGS_logtostderr = 1;
+  FLAGS_logtostderr = true;
   int port = absl::GetFlag(FLAGS_port).port;
   std::string address = absl::GetFlag(FLAGS_addr).addr;
   LOG(INFO) << "Starting server with port: " << port << " address: " << address;
   asio::io_context io;
-  Server server{io, port, address};
+  auto asio_addr = asio::ip::make_address_v4(address);
+  Server server{io, port, asio_addr};
   try {
     io.run();
   } catch (std::exception& e) {
