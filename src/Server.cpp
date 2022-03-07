@@ -10,9 +10,9 @@
 #include "dns/DnsPacket.hpp"
 #include "dns/DnsRecord.hpp"
 
-Server::Server(asio::io_context& io, int port, std::string& address)
-    : socket_(io, udp::endpoint(udp::v4(), port)),
-      server_endpoint_(asio::ip::make_address_v4(address), 53),
+Server::Server(asio::io_context& io, int port, asio::ip::address_v4& ns_addr)
+    : socket_(io, asio::ip::udp::endpoint(asio::ip::udp::v4(), port)),
+      ns_addr_(ns_addr),
       recv_buffer_() {
   receive();
 }
@@ -23,7 +23,8 @@ void Server::receive() {
   }
 }
 
-std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
+std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype,
+                                        asio::ip::address_v4 server_addr) {
   DnsPacket packet{};
   packet.header_.id_ = 6666;
   packet.header_.recursion_desired_ = true;
@@ -38,10 +39,11 @@ std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
   packet.write(bpb);
 
   DLOG(INFO) << "packet: " << packet;
-  socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint_);
+  asio::ip::udp::endpoint endpoint(server_addr, 53);
+  socket_.send_to(asio::buffer(bpb.buffer_), endpoint);
 
   std::array<uint8_t, 512> recv_buffer{};
-  udp::endpoint sender_endpoint;
+  asio::ip::udp::endpoint sender_endpoint;
   auto len = socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
   DLOG(INFO) << "Packet of len " << len << "received";
   BytePacketBuffer recv_bpb{recv_buffer};
@@ -53,9 +55,23 @@ std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
   return received_packet;
 }
 
+std::optional<DnsPacket> Server::recursive_lookup(std::string& qname,
+                                                  RecordType qtype) {
+  for (;;) {
+    DLOG(INFO) << "Attempting lookup of: " << qname
+               << "with ns:" << ns_addr_.to_string();
+    DnsPacket root_packet;
+    if (auto v = lookup(qname, qtype, ns_addr_)) {
+      root_packet = *v;
+    } else {
+      return {};
+    }
+  }
+}
+
 void Server::handle_query() {
   std::array<uint8_t, 512> recv_buffer{};
-  udp::endpoint sender_endpoint;
+  asio::ip::udp::endpoint sender_endpoint;
   socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
   BytePacketBuffer bpb{recv_buffer};
   DnsPacket request{bpb};
@@ -71,7 +87,7 @@ void Server::handle_query() {
   if (!request.questions_.empty()) {
     DLOG(INFO) << "Query received";
     auto& question = request.questions_[0];
-    if (auto v = lookup(question.name_, question.rtype_)) {
+    if (auto v = recursive_lookup(question.name_, question.rtype_)) {
       auto& result = *v;
       response.questions_.push_back(question);
       response.header_.rescode_ = result.header_.rescode_;
@@ -90,5 +106,8 @@ void Server::handle_query() {
 
   DLOG(INFO) << "response: " << response;
 
-  socket_.send_to(asio::buffer(response_buffer.buffer_), sender_endpoint);
+  std::vector<uint8_t> ans{
+      response_buffer.buffer_.begin(),
+      response_buffer.buffer_.begin() + response_buffer.get_pos()};
+  socket_.send_to(asio::buffer(ans), sender_endpoint);
 }

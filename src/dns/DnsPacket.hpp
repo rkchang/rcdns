@@ -10,6 +10,9 @@
 #include "DnsRecord.hpp"
 
 class DnsPacket {
+ private:
+  std::optional<DnsRecord> get_unresolved_nameserver(std::string &qname);
+
  public:
   DnsPacket() = default;
   DnsPacket(BytePacketBuffer &buffer);
