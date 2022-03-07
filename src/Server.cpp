@@ -47,7 +47,11 @@ std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype,
   auto len = socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
   DLOG(INFO) << "Packet of len " << len << "received";
   BytePacketBuffer recv_bpb{recv_buffer};
-  DnsPacket received_packet{recv_bpb};
+  DnsPacket received_packet{};
+  if (!received_packet.from_buffer(recv_bpb)) {
+    DLOG(INFO) << "Invalid buffer";
+    return {};
+  }
   DLOG(INFO) << "Packet Decoded";
 
   DLOG(INFO) << "received_packet: " << received_packet;
@@ -74,7 +78,11 @@ void Server::handle_query() {
   asio::ip::udp::endpoint sender_endpoint;
   socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
   BytePacketBuffer bpb{recv_buffer};
-  DnsPacket request{bpb};
+  DnsPacket request{};
+  if (!request.from_buffer(bpb)) {
+    DLOG(INFO) << "Invalid query, dropping";
+    return;
+  }
 
   DLOG(INFO) << "request: " << request;
 

@@ -1,7 +1,10 @@
 #include "DnsHeader.hpp"
 
+#include <glog/logging.h>
+
 #include <stdexcept>
-DnsHeader::DnsHeader(BytePacketBuffer &buffer) {
+
+bool DnsHeader::from_buffer(BytePacketBuffer &buffer) {
   id_ = buffer.read_u16();
   uint8_t flags_a = buffer.read();
   recursion_desired_ = (flags_a & (1 << 0)) > 0;
@@ -14,7 +17,7 @@ DnsHeader::DnsHeader(BytePacketBuffer &buffer) {
   if (auto v = rcode_from_num(flags_b & 0x0F)) {
     rescode_ = *v;
   } else {
-    throw std::runtime_error("Invalid rcode");
+    return false;
   }
   checking_disabled_ = (flags_b & (1 << 4)) > 0;
   authed_data_ = (flags_b & (1 << 5)) > 0;
@@ -48,6 +51,7 @@ void DnsHeader::write(BytePacketBuffer &buffer) const {
 std::optional<DnsHeader::ResultCode> DnsHeader::rcode_from_num(int num) {
   if (num < static_cast<int>(ResultCode::NOERROR) ||
       num > static_cast<int>(ResultCode::REFUSED)) {
+    DLOG(INFO) << "Invalid rcode";
     return {};
   }
   return ResultCode(num);

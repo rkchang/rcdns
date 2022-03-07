@@ -31,7 +31,8 @@ TEST(DnsPacketTest, WriteTest) {
   EXPECT_EQ(0U, bpb.read_u16());
   EXPECT_EQ(0U, bpb.read_u16());
   EXPECT_EQ(0U, bpb.read_u16());
-  DnsQuestion read_question{bpb};
+  DnsQuestion read_question{};
+  read_question.from_buffer(bpb);
   EXPECT_EQ(read_question.name_, question.name_);
   EXPECT_EQ(read_question.rtype_, question.rtype_);
   EXPECT_EQ(read_question.rclass_, question.rclass_);

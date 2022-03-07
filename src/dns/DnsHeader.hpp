@@ -17,7 +17,7 @@ class DnsHeader {
   };
 
   DnsHeader() = default;
-  DnsHeader(BytePacketBuffer &buffer);
+  bool from_buffer(BytePacketBuffer &buffer);
   void write(BytePacketBuffer &buffer) const;
   static std::optional<ResultCode> rcode_from_num(int num);
   friend std::ostream &operator<<(std::ostream &os, const DnsHeader &header);

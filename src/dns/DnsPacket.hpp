@@ -15,7 +15,7 @@ class DnsPacket {
 
  public:
   DnsPacket() = default;
-   write(BytePacketBuffer &buffer);
+  bool from_buffer(BytePacketBuffer &buffer);
   void write(BytePacketBuffer &buffer);
   friend std::ostream &operator<<(std::ostream &os, const DnsPacket &packet);
 

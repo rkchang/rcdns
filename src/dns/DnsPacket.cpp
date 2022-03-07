@@ -6,19 +6,37 @@
 #include "DnsHeader.hpp"
 #include "DnsRecord.hpp"
 
-DnsPacket::DnsPacket(BytePacketBuffer& buffer) : header_(buffer) {
+bool DnsPacket::from_buffer(BytePacketBuffer& buffer) {
+  header_ = DnsHeader();
+  if (!header_.from_buffer(buffer)) {
+    return false;
+  }
+
   for (auto i = 0; i < header_.questions_; i++) {
-    questions_.emplace_back(DnsQuestion(buffer));
+    questions_.emplace_back(DnsQuestion{});
+    if (!questions_.back().from_buffer(buffer)) {
+      return false;
+    }
   }
   for (auto i = 0; i < header_.answers_; i++) {
-    answers_.emplace_back(DnsRecord(buffer));
+    answers_.emplace_back(DnsRecord{});
+    if (!answers_.back().from_buffer(buffer)) {
+      return false;
+    }
   }
   for (auto i = 0; i < header_.authoritative_entries_; i++) {
-    authorities_.emplace_back(DnsRecord(buffer));
+    authorities_.emplace_back(DnsRecord{});
+    if (!authorities_.back().from_buffer(buffer)) {
+      return false;
+    }
   }
   for (auto i = 0; i < header_.resource_entries_; i++) {
-    resources_.emplace_back(DnsRecord(buffer));
+    resources_.emplace_back(DnsRecord{});
+    if (!resources_.back().from_buffer(buffer)) {
+      return false;
+    }
   }
+  return true;
 }
 
 void DnsPacket::write(BytePacketBuffer& buffer) {
