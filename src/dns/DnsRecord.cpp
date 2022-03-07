@@ -4,11 +4,12 @@
 
 #include <stdexcept>
 
-DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
+bool DnsRecord::from_buffer(BytePacketBuffer &buffer) {
   if (auto v = buffer.read_qname()) {
     domain_ = *v;
   } else {
-    throw std::runtime_error("Invalid name");
+    DLOG(INFO) << "Invalid name";
+    return false;
   }
   if (auto v = rtype_from_num(buffer.read_u16())) {
     rtype_ = *v;
@@ -18,7 +19,8 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
   switch (rtype_) {
     case RecordType::A: {
       if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
+        DLOG(INFO) << "Invalid record class";
+        return false;
       }
       rclass_ = RecordClass::IN;
       ttl_ = buffer.read_u32();
@@ -29,7 +31,8 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     }
     case RecordType::NS: {
       if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
+        DLOG(INFO) << "Invalid record class";
+        return false;
       }
       rclass_ = RecordClass::IN;
       ttl_ = buffer.read_u32();
@@ -37,13 +40,14 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
       if (auto v = buffer.read_qname()) {
         data_ = NSData{*v};
       } else {
-        throw std::runtime_error("Invalid qname");
+        return false;
       }
       break;
     }
     case RecordType::CNAME: {
       if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
+        DLOG(INFO) << "Invalid record class";
+        return false;
       }
       rclass_ = RecordClass::IN;
       ttl_ = buffer.read_u32();
@@ -51,13 +55,14 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
       if (auto v = buffer.read_qname()) {
         data_ = CNAMEData{*v};
       } else {
-        throw std::runtime_error("Invalid qname");
+        return false;
       }
       break;
     }
     case RecordType::MX: {
       if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
+        DLOG(INFO) << "Invalid record class";
+        return false;
       }
       rclass_ = RecordClass::IN;
       ttl_ = buffer.read_u32();
@@ -66,13 +71,14 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
       if (auto v = buffer.read_qname()) {
         data_ = MXData{priority, *v};
       } else {
-        throw std::runtime_error("Invalid qname");
+        return false;
       }
       break;
     }
     case RecordType::AAAA: {
       if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
+        DLOG(INFO) << "Invalid record class";
+        return false;
       }
       rclass_ = RecordClass::IN;
       ttl_ = buffer.read_u32();

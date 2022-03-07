@@ -36,7 +36,8 @@ class DnsRecord {
     friend std::ostream &operator<<(std::ostream &os, const AAAAData &payload);
   };
 
-  DnsRecord(BytePacketBuffer &buffer);
+  DnsRecord() = default;
+  bool from_buffer(BytePacketBuffer &buffer);
   bool write(BytePacketBuffer &buffer) const;
   friend std::ostream &operator<<(std::ostream &os, const DnsRecord &record);
 
