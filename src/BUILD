@@ -8,6 +8,6 @@ cc_binary(
         exclude = ["*_test.cpp"],
     ),
     deps = [
-        "//src/dns",
+        "//src/dns:dns_representation",
     ],
 )

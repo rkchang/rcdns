@@ -1,12 +1,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
-    name = "dns",
+    name = "dns_representation",
     srcs = glob([
         "*.cpp",
     ]),
     hdrs = glob([
         "*.hpp",
     ]),
-    visibility = ["//main:__pkg__"],
+    visibility = ["//visibility:public"],
 )
