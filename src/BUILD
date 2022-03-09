@@ -5,9 +5,14 @@ cc_binary(
             "*.cpp",
             "*.hpp",
         ],
-        exclude = ["*_test.cpp"],
+        exclude = glob(["*_test.cpp"]),
     ),
     deps = [
         "//src/dns:dns_representation",
+        "@com_github_google_glog//:glog",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/strings",
+        "@my-asio//:asio",
     ],
 )

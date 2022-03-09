@@ -8,6 +8,13 @@ http_archive(
 )
 
 http_archive(
+    name = "com_github_gflags_gflags",
+    sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
+    strip_prefix = "gflags-2.2.2",
+    urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
+)
+
+http_archive(
     name = "com_google_googletest",
     strip_prefix = "googletest-609281088cfefc76f9d0ce82e1ff6c30cc3591e5",
     urls = ["https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip"],
@@ -24,8 +31,23 @@ http_archive(
 #     path = "//external/abseil-cpp",
 # )
 
-new_local_repository(
+# new_local_repository(
+#     name = "my-asio",
+#     build_file = "//external/BUILD.my-asio",
+#     path = "//external/asio",
+# )
+
+http_archive(
+    name = "my-asio",
+    build_file_content = """
+cc_library(
     name = "asio",
-    build_file = "asio.BUILD",
-    path = "//external/asio",
+    visibility = ["//visibility:public"],
+    hdrs = glob(["asio/include/**/*.hpp"]) + glob(["asio/include/**/*.ipp"]),
+    defines = ["ASIO_STANDALONE"],
+    includes = ["asio/include"],
+)
+""",
+    strip_prefix = "asio-6c054e98f3f53352d12b6cd46d63b6d404cc044b",
+    urls = ["https://github.com/chriskohlhoff/asio/archive/6c054e98f3f53352d12b6cd46d63b6d404cc044b.zip"],
 )
