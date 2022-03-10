@@ -26,17 +26,6 @@ http_archive(
     urls = ["https://github.com/abseil/abseil-cpp/archive/98eb410c93ad059f9bba1bf43f5bb916fc92a5ea.zip"],
 )
 
-# local_repository(
-#     name = "com_google_absl",
-#     path = "//external/abseil-cpp",
-# )
-
-# new_local_repository(
-#     name = "my-asio",
-#     build_file = "//external/BUILD.my-asio",
-#     path = "//external/asio",
-# )
-
 http_archive(
     name = "my-asio",
     build_file_content = """
@@ -48,6 +37,7 @@ cc_library(
     includes = ["asio/include"],
 )
 """,
+    sha256 = "0167cc987f346f9ea57b394518c6ea54aa6c641460dd2cd1f82200662c67bf6a",
     strip_prefix = "asio-6c054e98f3f53352d12b6cd46d63b6d404cc044b",
     urls = ["https://github.com/chriskohlhoff/asio/archive/6c054e98f3f53352d12b6cd46d63b6d404cc044b.zip"],
 )
