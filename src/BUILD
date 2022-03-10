@@ -7,7 +7,6 @@ cc_binary(
         ],
         exclude = glob(["*_test.cpp"]),
     ),
-    defines = ["ASIO_STANDALONE"],
     deps = [
         "//src/dns:dns_representation",
         "@com_github_google_glog//:glog",
