@@ -11,6 +11,7 @@ cc_library(
     hdrs = glob([
         "*.hpp",
     ]),
+    defines = ["ASIO_STANDALONE"],
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_google_glog//:glog",
