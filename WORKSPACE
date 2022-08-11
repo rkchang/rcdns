@@ -7,12 +7,12 @@ http_archive(
     urls = ["https://github.com/google/glog/archive/v0.5.0.zip"],
 )
 
-http_archive(
-    name = "com_github_gflags_gflags",
-    sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
-    strip_prefix = "gflags-2.2.2",
-    urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
-)
+# http_archive(
+#     name = "com_github_gflags_gflags",
+#     sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
+#     strip_prefix = "gflags-2.2.2",
+#     urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
+# )
 
 http_archive(
     name = "com_google_googletest",
