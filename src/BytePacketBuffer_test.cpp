@@ -72,16 +72,5 @@ TEST_F(BytePacketBufferTest, ReadQNameTest) {
 
 TEST_F(BytePacketBufferTest, WriteQNameTest) {
   bpb2.write_qname("google.com");
-  EXPECT_EQ(bpb2.buffer_[0], bpb1.buffer_[0]);
-  EXPECT_EQ(bpb2.buffer_[1], bpb1.buffer_[1]);
-  EXPECT_EQ(bpb2.buffer_[2], bpb1.buffer_[2]);
-  EXPECT_EQ(bpb2.buffer_[3], bpb1.buffer_[3]);
-  EXPECT_EQ(bpb2.buffer_[4], bpb1.buffer_[4]);
-  EXPECT_EQ(bpb2.buffer_[5], bpb1.buffer_[5]);
-  EXPECT_EQ(bpb2.buffer_[6], bpb1.buffer_[6]);
-  EXPECT_EQ(bpb2.buffer_[7], bpb1.buffer_[7]);
-  EXPECT_EQ(bpb2.buffer_[8], bpb1.buffer_[8]);
-  EXPECT_EQ(bpb2.buffer_[9], bpb1.buffer_[9]);
-  EXPECT_EQ(bpb2.buffer_[10], bpb1.buffer_[10]);
-  EXPECT_EQ(bpb2.buffer_[11], bpb1.buffer_[11]);
+  EXPECT_TRUE(bpb2.buffer_ == bpb1.buffer_);
 }
