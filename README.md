@@ -4,6 +4,10 @@ This is a work in progress DNS server I wrote to learn more about DNS. It's
 written in C++17 and targets Ubuntu 20.04. 
 
 # Build 
+
+The project can be built with either bazel or cmake thus some dependencies may
+be unnecessary if you choose bazel.
+
 ## Build Dependencies 
 
 ``` 
@@ -11,7 +15,7 @@ g++-9.3.0 or clang++-10
 ninja or GNU Make
 clang-tidy 
 ccache 
-cmake 
+cmake and/or bazel 
 lld
 ``` 
 
@@ -25,6 +29,8 @@ abseil
 ```
 
 ## Building the project 
+
+### CMake
 
 There is a convenience Makefile (rcdns/Makefile) provided to build the project.
 The targets `debug` and `debugger` for the Makefile produce builds for
@@ -47,6 +53,19 @@ Project build types:
 Clang-tidy is run on each build using the configuration provided in
 .clang-tidy.
 
+
+### Bazel
+
+Build binary:
+```
+bazel build //src:rcdns
+```
+
+Build tests:
+```
+bazel build //src:all_tests
+```
+
 # Running the project
 
 The following are examples of running artifacts produced by debug builds of the
@@ -54,16 +73,28 @@ project
 
 ## Running the project
 
+### Cmake
 ```
 ./build_debug/rcdns
+```
+
+### Bazel
+```
+./bazel-bin/src/rcdns
 ```
 
 ## Running tests
 
 Tests can be run by executing the `all_tests` binary in the build directory.
 
+### CMake
 ```
 ./build_debug/all_tests
+```
+
+### Bazel
+```
+./bazel-bin/src/all_tests
 ```
 
 # References
