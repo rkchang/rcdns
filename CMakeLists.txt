@@ -34,10 +34,16 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(googletest)
 
 # glog
-find_package(glog 0.5.0 REQUIRED)
+# find_package(glog 0.5.0 REQUIRED)
+FetchContent_Declare(
+  glog
+  GIT_REPOSITORY https://github.com/google/glog.git  
+  GIT_TAG v0.6.0 
+)
+
+FetchContent_MakeAvailable(googletest glog)
 
 # abseil
 add_subdirectory(external/abseil-cpp) 
