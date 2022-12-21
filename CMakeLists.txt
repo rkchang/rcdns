@@ -47,11 +47,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest glog)
 
 # abseil
-add_subdirectory(external/abseil-cpp) 
+add_subdirectory(third-party/abseil-cpp) 
 
 # asio
 add_library(asio INTERFACE)
-target_include_directories(asio SYSTEM INTERFACE external/asio/asio/include)
+target_include_directories(asio SYSTEM INTERFACE third-party/asio/asio/include)
 
 
 # -------------------------------
@@ -122,7 +122,7 @@ add_executable(rcdns
 # )
 
 target_precompile_headers(rcdns PRIVATE 
-  external/asio/asio/include/asio.hpp
+  third-party/asio/asio/include/asio.hpp
   <optional>
   <string>
   <array>

@@ -1,6 +1,6 @@
 [submodule "external/asio"]
-	path = external/asio
+	path = third-party/asio
 	url = https://github.com/chriskohlhoff/asio
 [submodule "external/abseil-cpp"]
-	path = external/abseil-cpp
+	path = third-party/abseil-cpp
 	url = git@github.com:abseil/abseil-cpp.git
