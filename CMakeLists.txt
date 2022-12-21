@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.22)
 
 # Use Ccache
 # find_program(CCACHE_PROGRAM ccache)
@@ -28,8 +28,9 @@ include(FetchContent)
 # Source: https://google.github.io/googletest/quickstart-cmake.html
 FetchContent_Declare(
   googletest
-  GIT_REPOSITORY https://github.com/google/googletest
-  GIT_TAG release-1.11.0
+  # URL https://github.com/google/googletest/archive/58d77fa8070e8cec2dc1ed015d66b454c8d78850.zip
+  # GIT_REPOSITORY https://github.com/google/googletest
+  # GIT_TAG release-1.12.1
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -178,7 +179,7 @@ add_executable(all_tests
 # )
 
 target_link_libraries(all_tests
-  gtest_main
+  GTest::gtest_main
   asio
   glog::glog
   absl::strings

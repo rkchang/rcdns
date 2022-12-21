@@ -30,7 +30,7 @@ abseil
 
 ## Building the project 
 
-### CMake
+<!-- ### CMake
 
 There is a convenience Makefile (rcdns/Makefile) provided to build the project.
 The targets `debug` and `debugger` for the Makefile produce builds for
@@ -51,19 +51,19 @@ Project build types:
   `debug` except for Leak sanitizer as it's not compatible
 
 Clang-tidy is run on each build using the configuration provided in
-.clang-tidy.
+.clang-tidy. -->
 
 
 ### Bazel
 
-Build binary:
+Build debug binary:
 ```
-bazel build //src:rcdns
+bazel build  --compilation_mode=dbg --config=ausan //src:rcdns
 ```
 
 Build tests:
 ```
-bazel build //src:all_tests
+bazel build  --compilation_mode=dbg --config=ausan //src:all_tests
 ```
 
 # Running the project
@@ -73,28 +73,32 @@ project
 
 ## Running the project
 
-### Cmake
+<!-- ### Cmake
 ```
 ./build_debug/rcdns
-```
+``` -->
 
 ### Bazel
 ```
 ./bazel-bin/src/rcdns
+OR 
+bazel run  --compilation_mode=dbg --config=ausan //src:rcdns
 ```
 
 ## Running tests
 
 Tests can be run by executing the `all_tests` binary in the build directory.
 
-### CMake
+<!-- ### CMake
 ```
 ./build_debug/all_tests
-```
+``` -->
 
 ### Bazel
 ```
 ./bazel-bin/src/all_tests
+OR
+bazel run  --compilation_mode=dbg --config=ausan //src:all_tests
 ```
 
 # References
