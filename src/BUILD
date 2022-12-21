@@ -33,7 +33,7 @@ cc_test(
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/strings",
-        "@my-asio//:asio",
         "@com_google_googletest//:gtest_main",
+        "@my-asio//:asio",
     ],
 )
