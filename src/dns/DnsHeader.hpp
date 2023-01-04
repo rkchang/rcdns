@@ -6,7 +6,7 @@
 #include "BytePacketBuffer.hpp"
 
 class DnsHeader {
- public:
+public:
   enum class ResultCode {
     NOERROR = 0,
     FORMERR,

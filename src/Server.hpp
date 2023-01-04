@@ -9,12 +9,12 @@
 
 using asio::ip::udp;
 class Server {
- private:
+private:
   void handle_query();
-  std::optional<DnsPacket> lookup(std::string& qname, RecordType qtype);
+  std::optional<DnsPacket> lookup(std::string &qname, RecordType qtype);
 
- public:
-  Server(asio::io_context& io_context, int port, std::string& address);
+public:
+  Server(asio::io_context &io_context, int port, std::string &address);
   void receive();
   void respond();
   udp::socket socket_;

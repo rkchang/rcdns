@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-BytePacketBuffer::BytePacketBuffer(std::array<uint8_t, DNSPACKETSIZE>& packet)
+BytePacketBuffer::BytePacketBuffer(std::array<uint8_t, DNSPACKETSIZE> &packet)
     : pos{0}, buffer_(packet) {}
 
 int BytePacketBuffer::get_pos() const { return pos; }
@@ -116,7 +116,7 @@ void BytePacketBuffer::write_u32(uint32_t val) {
   write_u16(val & 0xFFFFU);
 }
 
-void BytePacketBuffer::write_qname(const std::string_view& qname) {
+void BytePacketBuffer::write_qname(const std::string_view &qname) {
   size_t start = 0;
   size_t end = 0;
   // Iterate over labels
@@ -130,7 +130,7 @@ void BytePacketBuffer::write_qname(const std::string_view& qname) {
       throw std::runtime_error("Label too long");
     }
     write(static_cast<uint8_t>(label.size()));
-    for (const auto& c : label) {
+    for (const auto &c : label) {
       write(static_cast<uint8_t>(c));
     }
     start = end + 1;

@@ -21,7 +21,7 @@
 struct PortNumber {
   explicit PortNumber(int p = 0) : port(p) {}
 
-  int port;  // Valid range is [0..32767]
+  int port; // Valid range is [0..32767]
 };
 
 struct Ipv4Address {
@@ -40,7 +40,7 @@ std::string AbslUnparseFlag(PortNumber p) {
 std::string AbslUnparseFlag(Ipv4Address a) { return absl::UnparseFlag(a.addr); }
 
 // // Taken from: https://abseil.io/docs/cpp/guides/flags
-bool AbslParseFlag(absl::string_view text, PortNumber* p, std::string* error) {
+bool AbslParseFlag(absl::string_view text, PortNumber *p, std::string *error) {
   // Convert from text to int using the int-flag parser.
   if (!absl::ParseFlag(text, &p->port, error)) {
     return false;
@@ -52,7 +52,7 @@ bool AbslParseFlag(absl::string_view text, PortNumber* p, std::string* error) {
   return true;
 }
 
-bool AbslParseFlag(absl::string_view text, Ipv4Address* a, std::string* error) {
+bool AbslParseFlag(absl::string_view text, Ipv4Address *a, std::string *error) {
   // Convert from text to int using the int-flag parser.
   if (!absl::ParseFlag(text, &a->addr, error)) {
     return false;
@@ -62,7 +62,7 @@ bool AbslParseFlag(absl::string_view text, Ipv4Address* a, std::string* error) {
     *error = "not enough octets";
     return false;
   }
-  for (const auto& elem : v) {
+  for (const auto &elem : v) {
     int32_t octet;
     if (!absl::SimpleAtoi(elem, &octet) || octet > 255 || octet < 0) {
       *error = "octet: " + elem + " not in range [0,255]";
@@ -76,7 +76,7 @@ bool AbslParseFlag(absl::string_view text, Ipv4Address* a, std::string* error) {
 ABSL_FLAG(PortNumber, port, PortNumber(44532), "What port to listen on");
 ABSL_FLAG(Ipv4Address, addr, Ipv4Address("8.8.8.8"), "What DNS server to use");
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);
   absl::ParseCommandLine(argc, argv);
   FLAGS_logtostderr = 1;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
   Server server{io, port, address};
   try {
     io.run();
-  } catch (std::exception& e) {
+  } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
   }
 }

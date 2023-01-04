@@ -4,12 +4,12 @@
 
 #include <cstdint>
 class BytePacketBufferTest : public ::testing::Test {
- private:
+private:
   std::array<uint8_t, DNSPACKETSIZE> buffer;
   std::array<uint8_t, DNSPACKETSIZE> buffer1;
   std::array<uint8_t, DNSPACKETSIZE> buffer2;
 
- protected:
+protected:
   BytePacketBufferTest()
       : buffer(), buffer1(), bpb(buffer), bpb1(buffer1), bpb2(buffer2) {
     bpb.buffer_[0] = 0x4F;
@@ -21,16 +21,16 @@ class BytePacketBufferTest : public ::testing::Test {
     bpb.buffer_[6] = 0xB3;
 
     bpb1.buffer_[0] = 0x06;
-    bpb1.buffer_[1] = 0x67;   // g
-    bpb1.buffer_[2] = 0x6f;   // o
-    bpb1.buffer_[3] = 0x6f;   // o
-    bpb1.buffer_[4] = 0x67;   // g
-    bpb1.buffer_[5] = 0x6c;   // l
-    bpb1.buffer_[6] = 0x65;   // e
-    bpb1.buffer_[7] = 0x03;   //
-    bpb1.buffer_[8] = 0x63;   // c
-    bpb1.buffer_[9] = 0x6f;   // o
-    bpb1.buffer_[10] = 0x6d;  // m
+    bpb1.buffer_[1] = 0x67;  // g
+    bpb1.buffer_[2] = 0x6f;  // o
+    bpb1.buffer_[3] = 0x6f;  // o
+    bpb1.buffer_[4] = 0x67;  // g
+    bpb1.buffer_[5] = 0x6c;  // l
+    bpb1.buffer_[6] = 0x65;  // e
+    bpb1.buffer_[7] = 0x03;  //
+    bpb1.buffer_[8] = 0x63;  // c
+    bpb1.buffer_[9] = 0x6f;  // o
+    bpb1.buffer_[10] = 0x6d; // m
     bpb1.buffer_[11] = 0x00;
   }
 

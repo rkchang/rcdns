@@ -10,7 +10,7 @@
 #include "DnsRecord.hpp"
 
 class DnsPacket {
- public:
+public:
   DnsPacket() = default;
   DnsPacket(BytePacketBuffer &buffer);
   void write(BytePacketBuffer &buffer);

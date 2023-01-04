@@ -9,7 +9,7 @@
 #include "RecordType.hpp"
 
 class DnsQuestion {
- public:
+public:
   DnsQuestion() = default;
   DnsQuestion(BytePacketBuffer &buffer);
   void write(BytePacketBuffer &buffer) const;

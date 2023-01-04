@@ -10,10 +10,9 @@
 #include "dns/DnsPacket.hpp"
 #include "dns/DnsRecord.hpp"
 
-Server::Server(asio::io_context& io, int port, std::string& address)
+Server::Server(asio::io_context &io, int port, std::string &address)
     : socket_(io, udp::endpoint(udp::v4(), port)),
-      server_endpoint_(asio::ip::make_address_v4(address), 53),
-      recv_buffer_() {
+      server_endpoint_(asio::ip::make_address_v4(address), 53), recv_buffer_() {
   receive();
 }
 
@@ -23,7 +22,7 @@ void Server::receive() {
   }
 }
 
-std::optional<DnsPacket> Server::lookup(std::string& qname, RecordType qtype) {
+std::optional<DnsPacket> Server::lookup(std::string &qname, RecordType qtype) {
   DnsPacket packet{};
   packet.header_.id_ = 6666;
   packet.header_.recursion_desired_ = true;
@@ -70,9 +69,9 @@ void Server::handle_query() {
 
   if (!request.questions_.empty()) {
     DLOG(INFO) << "Query received";
-    auto& question = request.questions_[0];
+    auto &question = request.questions_[0];
     if (auto v = lookup(question.name_, question.rtype_)) {
-      auto& result = *v;
+      auto &result = *v;
       response.questions_.push_back(question);
       response.header_.rescode_ = result.header_.rescode_;
       response.answers_ = result.answers_;

@@ -24,10 +24,10 @@ TEST(DnsPacketTest, WriteTest) {
   packet.write(bpb);
   bpb.seek(0);
 
-  EXPECT_EQ(6666, bpb.read_u16());  // id
-  EXPECT_EQ(1U, bpb.read());        // flags_a
-  EXPECT_EQ(0U, bpb.read());        // flags_b
-  EXPECT_EQ(1U, bpb.read_u16());    // question count
+  EXPECT_EQ(6666, bpb.read_u16()); // id
+  EXPECT_EQ(1U, bpb.read());       // flags_a
+  EXPECT_EQ(0U, bpb.read());       // flags_b
+  EXPECT_EQ(1U, bpb.read_u16());   // question count
   EXPECT_EQ(0U, bpb.read_u16());
   EXPECT_EQ(0U, bpb.read_u16());
   EXPECT_EQ(0U, bpb.read_u16());

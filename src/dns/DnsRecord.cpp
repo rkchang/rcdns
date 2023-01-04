@@ -16,82 +16,82 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     rtype_ = RecordType::UNKNOWN;
   }
   switch (rtype_) {
-    case RecordType::A: {
-      if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
-      }
-      rclass_ = RecordClass::IN;
-      ttl_ = buffer.read_u32();
-      data_len_ = buffer.read_u16();
-      asio::ip::address_v4 ip(buffer.read_u32());
-      data_ = AData{ip};
-      break;
+  case RecordType::A: {
+    if (buffer.read_u16() != 1) {
+      throw std::runtime_error("Invalid record class");
     }
-    case RecordType::NS: {
-      if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
-      }
-      rclass_ = RecordClass::IN;
-      ttl_ = buffer.read_u32();
-      data_len_ = buffer.read_u16();
-      if (auto v = buffer.read_qname()) {
-        data_ = NSData{*v};
-      } else {
-        throw std::runtime_error("Invalid qname");
-      }
-      break;
+    rclass_ = RecordClass::IN;
+    ttl_ = buffer.read_u32();
+    data_len_ = buffer.read_u16();
+    asio::ip::address_v4 ip(buffer.read_u32());
+    data_ = AData{ip};
+    break;
+  }
+  case RecordType::NS: {
+    if (buffer.read_u16() != 1) {
+      throw std::runtime_error("Invalid record class");
     }
-    case RecordType::CNAME: {
-      if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
-      }
-      rclass_ = RecordClass::IN;
-      ttl_ = buffer.read_u32();
-      data_len_ = buffer.read_u16();
-      if (auto v = buffer.read_qname()) {
-        data_ = CNAMEData{*v};
-      } else {
-        throw std::runtime_error("Invalid qname");
-      }
-      break;
+    rclass_ = RecordClass::IN;
+    ttl_ = buffer.read_u32();
+    data_len_ = buffer.read_u16();
+    if (auto v = buffer.read_qname()) {
+      data_ = NSData{*v};
+    } else {
+      throw std::runtime_error("Invalid qname");
     }
-    case RecordType::MX: {
-      if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
-      }
-      rclass_ = RecordClass::IN;
-      ttl_ = buffer.read_u32();
-      data_len_ = buffer.read_u16();
-      auto priority = buffer.read_u16();
-      if (auto v = buffer.read_qname()) {
-        data_ = MXData{priority, *v};
-      } else {
-        throw std::runtime_error("Invalid qname");
-      }
-      break;
+    break;
+  }
+  case RecordType::CNAME: {
+    if (buffer.read_u16() != 1) {
+      throw std::runtime_error("Invalid record class");
     }
-    case RecordType::AAAA: {
-      if (buffer.read_u16() != 1) {
-        throw std::runtime_error("Invalid record class");
-      }
-      rclass_ = RecordClass::IN;
-      ttl_ = buffer.read_u32();
-      data_len_ = buffer.read_u16();
-      asio::ip::address_v4 ip(buffer.read_u32());
-      data_ = AAAAData{ip};
-      break;
+    rclass_ = RecordClass::IN;
+    ttl_ = buffer.read_u32();
+    data_len_ = buffer.read_u16();
+    if (auto v = buffer.read_qname()) {
+      data_ = CNAMEData{*v};
+    } else {
+      throw std::runtime_error("Invalid qname");
     }
-    case RecordType::OPT: {
-      LOG(INFO) << "Unhandled record encountered, dropping";
-      break;
+    break;
+  }
+  case RecordType::MX: {
+    if (buffer.read_u16() != 1) {
+      throw std::runtime_error("Invalid record class");
     }
-    case RecordType::UNKNOWN: {
-      buffer.step(data_len_);
-      break;
+    rclass_ = RecordClass::IN;
+    ttl_ = buffer.read_u32();
+    data_len_ = buffer.read_u16();
+    auto priority = buffer.read_u16();
+    if (auto v = buffer.read_qname()) {
+      data_ = MXData{priority, *v};
+    } else {
+      throw std::runtime_error("Invalid qname");
     }
-    default: {
-      LOG(FATAL) << "No matching case for record type";
+    break;
+  }
+  case RecordType::AAAA: {
+    if (buffer.read_u16() != 1) {
+      throw std::runtime_error("Invalid record class");
     }
+    rclass_ = RecordClass::IN;
+    ttl_ = buffer.read_u32();
+    data_len_ = buffer.read_u16();
+    asio::ip::address_v4 ip(buffer.read_u32());
+    data_ = AAAAData{ip};
+    break;
+  }
+  case RecordType::OPT: {
+    LOG(INFO) << "Unhandled record encountered, dropping";
+    break;
+  }
+  case RecordType::UNKNOWN: {
+    buffer.step(data_len_);
+    break;
+  }
+  default: {
+    LOG(FATAL) << "No matching case for record type";
+  }
   }
 }
 
@@ -104,63 +104,63 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
     return false;
   }
   switch (rtype_) {
-    case RecordType::A: {
-      // write length of data
-      buffer.write_u16(4);
-      auto d = std::get<AData>(*data_);
-      auto bytes = d.ip.to_bytes();
-      for (auto b : bytes) {
-        buffer.write(b);
-      }
-      break;
+  case RecordType::A: {
+    // write length of data
+    buffer.write_u16(4);
+    auto d = std::get<AData>(*data_);
+    auto bytes = d.ip.to_bytes();
+    for (auto b : bytes) {
+      buffer.write(b);
     }
-    case RecordType::NS: {
-      // Set placeholder length
-      auto pos = buffer.get_pos();
-      buffer.write_u16(0);
+    break;
+  }
+  case RecordType::NS: {
+    // Set placeholder length
+    auto pos = buffer.get_pos();
+    buffer.write_u16(0);
 
-      auto d = std::get<NSData>(*data_);
-      buffer.write_qname(d.host);
-      auto size = buffer.get_pos() - (pos + 2);
-      buffer.set_u16(pos, static_cast<uint16_t>(size));
-      break;
-    }
-    case RecordType::CNAME: {
-      // Set placeholder length
-      auto pos = buffer.get_pos();
-      buffer.write_u16(0);
+    auto d = std::get<NSData>(*data_);
+    buffer.write_qname(d.host);
+    auto size = buffer.get_pos() - (pos + 2);
+    buffer.set_u16(pos, static_cast<uint16_t>(size));
+    break;
+  }
+  case RecordType::CNAME: {
+    // Set placeholder length
+    auto pos = buffer.get_pos();
+    buffer.write_u16(0);
 
-      auto d = std::get<CNAMEData>(*data_);
-      buffer.write_qname(d.host);
-      auto size = buffer.get_pos() - (pos + 2);
-      buffer.set_u16(pos, static_cast<uint16_t>(size));
-      break;
-    }
-    case RecordType::MX: {
-      // Set placeholder length
-      auto pos = buffer.get_pos();
-      buffer.write_u16(0);
+    auto d = std::get<CNAMEData>(*data_);
+    buffer.write_qname(d.host);
+    auto size = buffer.get_pos() - (pos + 2);
+    buffer.set_u16(pos, static_cast<uint16_t>(size));
+    break;
+  }
+  case RecordType::MX: {
+    // Set placeholder length
+    auto pos = buffer.get_pos();
+    buffer.write_u16(0);
 
-      auto d = std::get<MXData>(*data_);
-      buffer.write_u16(d.priority);
-      buffer.write_qname(d.host);
-      auto size = buffer.get_pos() - (pos + 2);
-      buffer.set_u16(pos, static_cast<uint16_t>(size));
-      break;
+    auto d = std::get<MXData>(*data_);
+    buffer.write_u16(d.priority);
+    buffer.write_qname(d.host);
+    auto size = buffer.get_pos() - (pos + 2);
+    buffer.set_u16(pos, static_cast<uint16_t>(size));
+    break;
+  }
+  case RecordType::AAAA: {
+    buffer.write_u16(4);
+    auto d = std::get<AAAAData>(*data_);
+    auto bytes = d.ip.to_bytes();
+    for (auto b : bytes) {
+      buffer.write(b);
     }
-    case RecordType::AAAA: {
-      buffer.write_u16(4);
-      auto d = std::get<AAAAData>(*data_);
-      auto bytes = d.ip.to_bytes();
-      for (auto b : bytes) {
-        buffer.write(b);
-      }
-      break;
-    }
-    default: {
-      LOG(FATAL) << "No matching case for record type";
-      break;
-    }
+    break;
+  }
+  default: {
+    LOG(FATAL) << "No matching case for record type";
+    break;
+  }
   }
   return true;
 }

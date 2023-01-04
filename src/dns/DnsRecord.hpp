@@ -10,10 +10,10 @@
 #include "RecordType.hpp"
 
 class DnsRecord {
- private:
+private:
   void write_ip(uint16_t size);
 
- public:
+public:
   struct AData {
     asio::ip::address_v4 ip;
     friend std::ostream &operator<<(std::ostream &os, const AData &payload);

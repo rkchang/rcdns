@@ -7,15 +7,15 @@
 constexpr int DNSPACKETSIZE = 512;
 
 class BytePacketBuffer {
- private:
+private:
   int pos;
 
- public:
+public:
   // TODO(rkchang) :
   // Might be better as a unique ptr in the future
   std::array<uint8_t, DNSPACKETSIZE> buffer_;
 
-  BytePacketBuffer(std::array<uint8_t, DNSPACKETSIZE>& packet);
+  BytePacketBuffer(std::array<uint8_t, DNSPACKETSIZE> &packet);
 
   int get_pos() const;
   void step(int steps);
@@ -28,7 +28,7 @@ class BytePacketBuffer {
   void write(uint8_t val);
   void write_u16(uint16_t val);
   void write_u32(uint32_t val);
-  void write_qname(const std::string_view& qname);
+  void write_qname(const std::string_view &qname);
   void set(int pos, uint8_t val);
   void set_u16(int pos, uint16_t val);
 };
