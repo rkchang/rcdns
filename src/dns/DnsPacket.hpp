@@ -12,7 +12,7 @@
 class DnsPacket {
 public:
   DnsPacket() = default;
-  DnsPacket(BytePacketBuffer &buffer);
+  explicit DnsPacket(BytePacketBuffer &buffer);
   void write(BytePacketBuffer &buffer);
   friend std::ostream &operator<<(std::ostream &os, const DnsPacket &packet);
 

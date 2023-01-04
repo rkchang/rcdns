@@ -121,7 +121,7 @@ void BytePacketBuffer::write_qname(const std::string_view &qname) {
   size_t end = 0;
   // Iterate over labels
   while (end != qname.size()) {
-    end = qname.find(".", end + 1);
+    end = qname.find('.', end + 1);
     if (end == std::string_view::npos) {
       end = qname.size();
     }

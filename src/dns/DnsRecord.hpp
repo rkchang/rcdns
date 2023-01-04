@@ -36,7 +36,7 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const AAAAData &payload);
   };
 
-  DnsRecord(BytePacketBuffer &buffer);
+  explicit DnsRecord(BytePacketBuffer &buffer);
   bool write(BytePacketBuffer &buffer) const;
   friend std::ostream &operator<<(std::ostream &os, const DnsRecord &record);
 

@@ -8,16 +8,16 @@
 
 DnsPacket::DnsPacket(BytePacketBuffer &buffer) : header_(buffer) {
   for (auto i = 0; i < header_.questions_; i++) {
-    questions_.emplace_back(DnsQuestion(buffer));
+    questions_.emplace_back(buffer);
   }
   for (auto i = 0; i < header_.answers_; i++) {
-    answers_.emplace_back(DnsRecord(buffer));
+    answers_.emplace_back(buffer);
   }
   for (auto i = 0; i < header_.authoritative_entries_; i++) {
-    authorities_.emplace_back(DnsRecord(buffer));
+    authorities_.emplace_back(buffer);
   }
   for (auto i = 0; i < header_.resource_entries_; i++) {
-    resources_.emplace_back(DnsRecord(buffer));
+    resources_.emplace_back(buffer);
   }
 }
 

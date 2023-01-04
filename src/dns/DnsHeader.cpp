@@ -1,8 +1,7 @@
 #include "DnsHeader.hpp"
 
 #include <stdexcept>
-DnsHeader::DnsHeader(BytePacketBuffer &buffer) {
-  id_ = buffer.read_u16();
+DnsHeader::DnsHeader(BytePacketBuffer &buffer) : id_(buffer.read_u16()) {
   uint8_t flags_a = buffer.read();
   recursion_desired_ = (flags_a & (1 << 0)) > 0;
   truncated_message_ = (flags_a & (1 << 1)) > 0;
