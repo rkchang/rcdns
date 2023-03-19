@@ -1,19 +1,1 @@
-build:debug -c dbg
-build:debug --copt="-g"
-build:debug --strip="never"
-
-build:ausan --strip=never
-build:ausan --copt -fsanitize=address,undefined
-build:ausan --copt -O1
-build:ausan --copt -g
-build:ausan --linkopt -fsanitize=address,undefined
-
-build:tsan --strip=never
-build:tsan --copt -fsanitize=thread
-build:tsan --copt -DTHREAD_SANITIZER
-build:tsan --copt -DDYNAMIC_ANNOTATIONS_ENABLED=1
-build:tsan --copt -DDYNAMIC_ANNOTATIONS_EXTERNAL_IMPL=1
-build:tsan --copt -O1
-build:tsan --linkopt -fsanitize=thread
-
 build --cxxopt="-std=c++17"

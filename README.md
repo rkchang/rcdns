@@ -98,8 +98,11 @@ Tests can be run by executing the `all_tests` binary in the build directory.
 ```
 ./bazel-bin/src/all_tests
 OR
-bazel run  --compilation_mode=dbg --config=ausan //src:all_tests
+bazel run  --compilation_mode=dbg --features=asan //src:all_tests
 ```
+
+## Compile commands
+`bazel run @hedron_compile_commands//:refresh_all
 
 # References
 - Emil Hernvall's guide to writing a DNS server was a key part in writing this project. Please visit: https://github.com/EmilHernvall/dnsguide.

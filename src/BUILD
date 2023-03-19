@@ -15,6 +15,11 @@ cc_binary(
         "@com_google_absl//absl/strings",
         "@my-asio//:asio",
     ],
+    copts = [
+    "-Wpedantic",
+    "-Wall",
+    "-Wextra",
+    ],
 )
 
 cc_test(
@@ -35,5 +40,10 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@my-asio//:asio",
+    ],
+    copts = [
+    "-Wpedantic",
+    "-Wall",
+    "-Wextra",
     ],
 )
