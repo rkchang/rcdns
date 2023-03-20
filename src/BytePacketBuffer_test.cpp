@@ -5,9 +5,9 @@
 #include <cstdint>
 class BytePacketBufferTest : public ::testing::Test {
 private:
-  std::array<uint8_t, DNSPACKETSIZE> buffer;
-  std::array<uint8_t, DNSPACKETSIZE> buffer1;
-  std::array<uint8_t, DNSPACKETSIZE> buffer2;
+  std::array<uint8_t, DNSPACKETSIZE> buffer {};
+  std::array<uint8_t, DNSPACKETSIZE> buffer1 {};
+  std::array<uint8_t, DNSPACKETSIZE> buffer2 {};
 
 protected:
   BytePacketBufferTest()
