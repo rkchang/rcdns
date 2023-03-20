@@ -11,7 +11,7 @@ using asio::ip::udp;
 class Server {
 private:
   void handle_query();
-  std::optional<DnsPacket> lookup(std::string &qname, RecordType qtype);
+  std::optional<DnsPacket> lookup(const std::string &qname, RecordType qtype);
 
 public:
   Server(asio::io_context &io_context, int port, std::string &address);

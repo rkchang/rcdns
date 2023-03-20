@@ -22,15 +22,12 @@ void Server::receive() {
   }
 }
 
-std::optional<DnsPacket> Server::lookup(std::string &qname, RecordType qtype) {
+std::optional<DnsPacket> Server::lookup(const std::string &qname, RecordType qtype) {
   DnsPacket packet{};
   packet.header_.id_ = 6666;
   packet.header_.recursion_desired_ = true;
   packet.header_.questions_ = 1;
-  DnsQuestion question{};
-  question.name_ = qname;
-  question.rtype_ = qtype;
-  question.rclass_ = RecordClass::IN;
+  DnsQuestion question{qname, qtype, RecordClass::IN};
   packet.questions_.push_back(question);
   std::array<uint8_t, 512> arr{};
   BytePacketBuffer bpb{arr};

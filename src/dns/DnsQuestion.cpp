@@ -4,6 +4,8 @@
 
 #include <stdexcept>
 
+DnsQuestion::DnsQuestion(std::string name, RecordType rtype, RecordClass rclass) : name_(name), rtype_(rtype), rclass_(rclass) {}
+
 DnsQuestion::DnsQuestion(BytePacketBuffer &buffer) {
   if (auto v = buffer.read_qname()) {
     name_ = *v;
