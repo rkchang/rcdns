@@ -144,3 +144,15 @@ void BytePacketBuffer::set_u16(int pos, uint16_t val) {
   set(pos, val >> 8);
   set(pos, val & 0xFF);
 }
+
+std::ostream &operator<<(std::ostream &os, const BytePacketBuffer &bpb) {
+  os << "[";
+  for (std::size_t i = 0; i < bpb.buffer_.size(); i++) {
+    os << bpb.buffer_[i];
+    if (i != bpb.buffer_.size() - 1) {
+      os << ",";
+    }
+  }
+  os << "]";
+  return os;
+}
