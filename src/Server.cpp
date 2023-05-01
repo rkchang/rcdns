@@ -23,7 +23,7 @@ void Server::receive() {
     socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
     BytePacketBuffer bpb{recv_buffer};
     DnsPacket incoming{bpb};
-    DLOG(INFO) << "request: " << incoming;
+    DLOG(INFO) << "incoming: " << incoming;
     if (!incoming.answers_.empty()) {
       DLOG(INFO) << "Answers received";
       handle_answer(incoming);
@@ -51,7 +51,7 @@ void Server::lookup(const std::string &qname, RecordType qtype, int id) {
   BytePacketBuffer bpb{arr};
   packet.write(bpb);
 
-  DLOG(INFO) << "packet: " << packet;
+  DLOG(INFO) << "lookup packet: " << packet;
   socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint_);
 
   // std::array<uint8_t, 512> recv_buffer{};
