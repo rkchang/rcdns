@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Constants.hpp"
 
 #include <glog/logging.h>
 
@@ -10,9 +11,11 @@
 #include "dns/DnsPacket.hpp"
 #include "dns/DnsRecord.hpp"
 
-Server::Server(asio::io_context &io, int port, std::string &address)
+Server::Server(asio::io_context &io, int port, std::string &address,
+               std::string &ns_address)
     : socket_(io, udp::endpoint(udp::v4(), port)),
-      server_endpoint_(asio::ip::make_address_v4(address), 53), recv_buffer_() {
+      server_endpoint_(asio::ip::make_address_v4(address), constants::PORT_NUM),
+      ns_address_(ns_address), recv_buffer_() {
   receive();
 }
 
@@ -27,8 +30,7 @@ void Server::receive() {
     if (!incoming.answers_.empty()) {
       DLOG(INFO) << "Answers received";
       handle_answer(incoming);
-    }
-    else if (!incoming.questions_.empty()) {
+    } else if (!incoming.questions_.empty()) {
       DLOG(INFO) << "Query received";
       auto &question = incoming.questions_[0];
       int id = incoming.header_.id_;
@@ -56,8 +58,8 @@ void Server::lookup(const std::string &qname, RecordType qtype, int id) {
 
   // std::array<uint8_t, 512> recv_buffer{};
   // udp::endpoint sender_endpoint;
-  // auto len = socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
-  // DLOG(INFO) << "Packet of len " << len << "received";
+  // auto len = socket_.receive_from(asio::buffer(recv_buffer),
+  // sender_endpoint); DLOG(INFO) << "Packet of len " << len << "received";
   // BytePacketBuffer recv_bpb{recv_buffer};
   // DnsPacket received_packet{recv_bpb};
   // DLOG(INFO) << "Packet Decoded";
@@ -65,7 +67,18 @@ void Server::lookup(const std::string &qname, RecordType qtype, int id) {
   // DLOG(INFO) << "received_packet: " << received_packet;
 }
 
-void Server::handle_answer(const DnsPacket& answer) {
+void Server::recursive_lookup(const std::string &qname, RecordType qtype,
+                              int id) {
+  auto ns_addr = ns_address_;
+  while (true) {
+    DLOG(INFO) << "attempting lookup of: " << name_from_rtype(qtype) << " "
+               << qname << " with ns: " << ns_address_;
+    udp::endpoint endpoint(asio::ip::make_address_v4(ns_addr),
+                           constants::PORT_NUM);
+  }
+}
+
+void Server::handle_answer(const DnsPacket &answer) {
   DnsPacket response{};
   response.header_.id_ = answer.header_.id_;
   response.header_.recursion_desired_ = true;
@@ -82,4 +95,3 @@ void Server::handle_answer(const DnsPacket& answer) {
   DLOG(INFO) << "answer: " << response;
   socket_.send_to(asio::buffer(response_buffer.buffer_), endpoint);
 }
-

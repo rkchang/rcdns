@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <string>
 
 enum class RecordType {
   UNKNOWN,
@@ -12,3 +13,4 @@ enum class RecordType {
 };
 
 std::optional<RecordType> rtype_from_num(int num);
+std::string name_from_rtype(RecordType &rt);
