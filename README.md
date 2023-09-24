@@ -1,7 +1,7 @@
 # rcdns
 
 This is a work in progress DNS server I wrote to learn more about DNS. It's
-written in C++17 and targets Ubuntu 20.04.
+written in C++17 and targets Ubuntu 22.04.
 
 Demo:
 
