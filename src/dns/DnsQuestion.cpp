@@ -22,7 +22,7 @@ bool DnsQuestion::from_buffer(BytePacketBuffer &buffer) {
   }
   if (rtype_ == RecordType::OPT) {
     LOG(INFO) << "Pseudo resource records not supported";
-    return true;
+    return false;
   }
   if (buffer.read_u16() != static_cast<uint16_t>(RecordClass::IN)) {
     LOG(WARNING) << "Invalid record class";

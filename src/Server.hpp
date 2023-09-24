@@ -29,5 +29,4 @@ public:
   std::array<uint8_t, 512> recv_buffer_;
   // query domain -> (query header id, inquirer endpoint)
   std::unordered_map<std::string, std::pair<int, udp::endpoint>> queries_;
-  std::unordered_map<std::string, std::vector<std::string>> tasks;
 };
