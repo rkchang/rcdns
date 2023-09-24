@@ -1,14 +1,17 @@
 #include "DnsRecord.hpp"
+#include "RecordType.hpp"
 
 #include <glog/logging.h>
 
 #include <stdexcept>
+#include <string>
 
-DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
+bool DnsRecord::from_buffer(BytePacketBuffer &buffer) {
   if (auto v = buffer.read_qname()) {
     domain_ = *v;
   } else {
-    throw std::runtime_error("Invalid name");
+    LOG(WARNING) << "Invalid name";
+    return false;
   }
   if (auto v = rtype_from_num(buffer.read_u16())) {
     rtype_ = *v;
@@ -18,7 +21,8 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
   switch (rtype_) {
   case RecordType::A: {
     if (buffer.read_u16() != 1) {
-      throw std::runtime_error("Invalid record class");
+      LOG(WARNING) << "Invalid record class";
+      return false;
     }
     rclass_ = RecordClass::IN;
     ttl_ = buffer.read_u32();
@@ -29,7 +33,8 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
   }
   case RecordType::NS: {
     if (buffer.read_u16() != 1) {
-      throw std::runtime_error("Invalid record class");
+      LOG(WARNING) << "Invalid record class";
+      return false;
     }
     rclass_ = RecordClass::IN;
     ttl_ = buffer.read_u32();
@@ -37,13 +42,15 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     if (auto v = buffer.read_qname()) {
       data_ = NSData{*v};
     } else {
-      throw std::runtime_error("Invalid qname");
+      LOG(WARNING) << "Invalid qname";
+      return false;
     }
     break;
   }
   case RecordType::CNAME: {
     if (buffer.read_u16() != 1) {
-      throw std::runtime_error("Invalid record class");
+      LOG(WARNING) << "Invalid record class";
+      return false;
     }
     rclass_ = RecordClass::IN;
     ttl_ = buffer.read_u32();
@@ -51,13 +58,15 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     if (auto v = buffer.read_qname()) {
       data_ = CNAMEData{*v};
     } else {
-      throw std::runtime_error("Invalid qname");
+      LOG(WARNING) << "Invalid qname";
+      return false;
     }
     break;
   }
   case RecordType::MX: {
     if (buffer.read_u16() != 1) {
-      throw std::runtime_error("Invalid record class");
+      LOG(WARNING) << "Invalid record class";
+      return false;
     }
     rclass_ = RecordClass::IN;
     ttl_ = buffer.read_u32();
@@ -66,13 +75,13 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     if (auto v = buffer.read_qname()) {
       data_ = MXData{priority, *v};
     } else {
-      throw std::runtime_error("Invalid qname");
+      LOG(WARNING) << "Invalid qname";
     }
     break;
   }
   case RecordType::AAAA: {
     if (buffer.read_u16() != 1) {
-      throw std::runtime_error("Invalid record class");
+      LOG(WARNING) << "Invalid record class";
     }
     rclass_ = RecordClass::IN;
     ttl_ = buffer.read_u32();
@@ -82,7 +91,8 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     break;
   }
   case RecordType::OPT: {
-    LOG(INFO) << "Unhandled record encountered, dropping";
+    LOG(WARNING) << "Unhandled record type encountered, dropping";
+    return false;
     break;
   }
   case RecordType::UNKNOWN: {
@@ -90,9 +100,11 @@ DnsRecord::DnsRecord(BytePacketBuffer &buffer) {
     break;
   }
   default: {
-    LOG(FATAL) << "No matching case for record type";
+    LOG(WARNING) << "No matching case for record type ";
+    return false;
   }
   }
+  return true;
 }
 
 bool DnsRecord::write(BytePacketBuffer &buffer) const {
@@ -100,14 +112,14 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
   buffer.write_u16(static_cast<int>(rtype_));
   buffer.write_u16(static_cast<uint16_t>(RecordClass::IN));
   buffer.write_u32(ttl_);
-  if (!data_.has_value()) {
+  if (std::holds_alternative<std::monostate>(data_)) {
     return false;
   }
   switch (rtype_) {
   case RecordType::A: {
     // write length of data
     buffer.write_u16(4);
-    auto d = std::get<AData>(*data_);
+    auto d = std::get<AData>(data_);
     auto bytes = d.ip.to_bytes();
     for (auto b : bytes) {
       buffer.write(b);
@@ -119,7 +131,7 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
     auto pos = buffer.get_pos();
     buffer.write_u16(0);
 
-    auto d = std::get<NSData>(*data_);
+    auto d = std::get<NSData>(data_);
     buffer.write_qname(d.host);
     auto size = buffer.get_pos() - (pos + 2);
     buffer.set_u16(pos, static_cast<uint16_t>(size));
@@ -130,7 +142,7 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
     auto pos = buffer.get_pos();
     buffer.write_u16(0);
 
-    auto d = std::get<CNAMEData>(*data_);
+    auto d = std::get<CNAMEData>(data_);
     buffer.write_qname(d.host);
     auto size = buffer.get_pos() - (pos + 2);
     buffer.set_u16(pos, static_cast<uint16_t>(size));
@@ -141,7 +153,7 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
     auto pos = buffer.get_pos();
     buffer.write_u16(0);
 
-    auto d = std::get<MXData>(*data_);
+    auto d = std::get<MXData>(data_);
     buffer.write_u16(d.priority);
     buffer.write_qname(d.host);
     auto size = buffer.get_pos() - (pos + 2);
@@ -150,7 +162,7 @@ bool DnsRecord::write(BytePacketBuffer &buffer) const {
   }
   case RecordType::AAAA: {
     buffer.write_u16(4);
-    auto d = std::get<AAAAData>(*data_);
+    auto d = std::get<AAAAData>(data_);
     auto bytes = d.ip.to_bytes();
     for (auto b : bytes) {
       buffer.write(b);
@@ -196,6 +208,11 @@ std::ostream &operator<<(std::ostream &os, const DnsRecord::AAAAData &payload) {
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, std::monostate m) {
+  os << "empty variant";
+  return os;
+}
+
 std::ostream &operator<<(std::ostream &os, const DnsRecord &record) {
   os << "["
      << " domain_: " << record.domain_
@@ -203,9 +220,7 @@ std::ostream &operator<<(std::ostream &os, const DnsRecord &record) {
      << " rclass_: " << static_cast<int>(record.rclass_)
      << " ttl_: " << record.ttl_ << " data_len_: " << record.data_len_
      << " data_: ";
-  if (auto v = record.data_) {
-    std::visit([&os](auto &d) { os << d; }, *v);
-  }
+  std::visit([&os](auto &d) { os << d; }, record.data_);
   os << "]";
   return os;
 }

@@ -11,8 +11,8 @@
 class DnsQuestion {
 public:
   DnsQuestion() = default;
-  DnsQuestion(BytePacketBuffer &buffer);
   DnsQuestion(std::string name, RecordType rtype, RecordClass rclass);
+  bool from_buffer(BytePacketBuffer &buffer);
   void write(BytePacketBuffer &buffer) const;
   friend std::ostream &operator<<(std::ostream &os,
                                   const DnsQuestion &question);

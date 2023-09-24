@@ -122,10 +122,11 @@ void BytePacketBuffer::write_qname(const std::string_view &qname) {
   // Iterate over labels
   while (end != qname.size()) {
     end = qname.find('.', end + 1);
+    // Check if we can't find the dot
     if (end == std::string_view::npos) {
       end = qname.size();
     }
-    auto label = qname.substr(start, end);
+    auto label = qname.substr(start, end - start);
     if (label.size() > 0x3F) {
       throw std::runtime_error("Label too long");
     }

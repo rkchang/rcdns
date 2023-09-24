@@ -5,9 +5,9 @@
 #include <cstdint>
 class BytePacketBufferTest : public ::testing::Test {
 private:
-  std::array<uint8_t, DNSPACKETSIZE> buffer {};
-  std::array<uint8_t, DNSPACKETSIZE> buffer1 {};
-  std::array<uint8_t, DNSPACKETSIZE> buffer2 {};
+  std::array<uint8_t, DNSPACKETSIZE> buffer{};
+  std::array<uint8_t, DNSPACKETSIZE> buffer1{};
+  std::array<uint8_t, DNSPACKETSIZE> buffer2{};
 
 protected:
   BytePacketBufferTest()
@@ -20,18 +20,22 @@ protected:
     bpb.buffer_[5] = 0xA3;
     bpb.buffer_[6] = 0xB3;
 
-    bpb1.buffer_[0] = 0x06;
-    bpb1.buffer_[1] = 0x67;  // g
-    bpb1.buffer_[2] = 0x6f;  // o
-    bpb1.buffer_[3] = 0x6f;  // o
-    bpb1.buffer_[4] = 0x67;  // g
-    bpb1.buffer_[5] = 0x6c;  // l
-    bpb1.buffer_[6] = 0x65;  // e
-    bpb1.buffer_[7] = 0x03;  //
-    bpb1.buffer_[8] = 0x63;  // c
-    bpb1.buffer_[9] = 0x6f;  // o
-    bpb1.buffer_[10] = 0x6d; // m
-    bpb1.buffer_[11] = 0x00;
+    bpb1.buffer_[0] = 0x03;
+    bpb1.buffer_[1] = 0x77;  // w
+    bpb1.buffer_[2] = 0x77;  // w
+    bpb1.buffer_[3] = 0x77;  // w
+    bpb1.buffer_[4] = 0x06;  // .
+    bpb1.buffer_[5] = 0x67;  // g
+    bpb1.buffer_[6] = 0x6f;  // o
+    bpb1.buffer_[7] = 0x6f;  // o
+    bpb1.buffer_[8] = 0x67;  // g
+    bpb1.buffer_[9] = 0x6c;  // l
+    bpb1.buffer_[10] = 0x65; // e
+    bpb1.buffer_[11] = 0x03; //
+    bpb1.buffer_[12] = 0x63; // c
+    bpb1.buffer_[13] = 0x6f; // o
+    bpb1.buffer_[14] = 0x6d; // m
+    bpb1.buffer_[15] = 0x00;
   }
 
   BytePacketBuffer bpb;
@@ -67,10 +71,10 @@ TEST_F(BytePacketBufferTest, ReadTest) {
 TEST_F(BytePacketBufferTest, ReadQNameTest) {
   auto v = bpb1.read_qname();
   ASSERT_EQ(true, v.has_value());
-  EXPECT_EQ("google.com", *v);
+  EXPECT_EQ("www.google.com", *v);
 }
 
 TEST_F(BytePacketBufferTest, WriteQNameTest) {
-  bpb2.write_qname("google.com");
+  bpb2.write_qname("www.google.com");
   EXPECT_TRUE(bpb2.buffer_ == bpb1.buffer_);
 }

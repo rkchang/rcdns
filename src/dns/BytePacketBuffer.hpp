@@ -14,8 +14,10 @@ public:
   // TODO(rkchang) :
   // Might be better as a unique ptr in the future
   std::array<uint8_t, DNSPACKETSIZE> buffer_;
+  BytePacketBuffer() = default;
   explicit BytePacketBuffer(std::array<uint8_t, DNSPACKETSIZE> &packet);
-  friend std::ostream &operator<<(std::ostream &os, const BytePacketBuffer &header);
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const BytePacketBuffer &header);
 
   int get_pos() const;
   void step(int steps);

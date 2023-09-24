@@ -1,4 +1,5 @@
 #include "DnsPacket.hpp"
+#include <glog/logging.h>
 
 #include <ostream>
 
@@ -8,16 +9,32 @@
 
 DnsPacket::DnsPacket(BytePacketBuffer &buffer) : header_(buffer) {
   for (auto i = 0; i < header_.questions_; i++) {
-    questions_.emplace_back(buffer);
+    DnsQuestion qtion{};
+    if (!qtion.from_buffer(buffer)) {
+      LOG(WARNING) << "Failed to parse DnsRecord, DROPPING";
+    }
+    questions_.push_back(qtion);
   }
   for (auto i = 0; i < header_.answers_; i++) {
-    answers_.emplace_back(buffer);
+    DnsRecord rec{};
+    if (!rec.from_buffer(buffer)) {
+      LOG(WARNING) << "Failed to parse DnsRecord, DROPPING";
+    }
+    answers_.push_back(rec);
   }
   for (auto i = 0; i < header_.authoritative_entries_; i++) {
-    authorities_.emplace_back(buffer);
+    DnsRecord rec{};
+    if (!rec.from_buffer(buffer)) {
+      LOG(WARNING) << "Failed to parse DnsRecord, DROPPING";
+    }
+    authorities_.push_back(rec);
   }
   for (auto i = 0; i < header_.resource_entries_; i++) {
-    resources_.emplace_back(buffer);
+    DnsRecord rec{};
+    if (!rec.from_buffer(buffer)) {
+      LOG(WARNING) << "Failed to parse DnsRecord, DROPPING";
+    }
+    resources_.push_back(rec);
   }
 }
 
@@ -41,6 +58,7 @@ void DnsPacket::write(BytePacketBuffer &buffer) {
     record.write(buffer);
   }
 }
+
 std::ostream &operator<<(std::ostream &os, const DnsPacket &packet) {
   os << "[\n"
      << " header_: " << packet.header_ << "\n"

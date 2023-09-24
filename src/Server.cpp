@@ -11,10 +11,13 @@
 #include "dns/DnsPacket.hpp"
 #include "dns/DnsRecord.hpp"
 
-Server::Server(asio::io_context &io, int port, std::string &address,
+Server::Server(asio::io_context &io, int port, std::string &dns_address,
                std::string &ns_address)
     : socket_(io, udp::endpoint(udp::v4(), port)),
-      server_endpoint_(asio::ip::make_address_v4(address), constants::PORT_NUM),
+      ns_endpoint_(asio::ip::make_address_v4(ns_address),
+                   constants::DNS_PORT_NUM),
+      dns_endpoint_(asio::ip::make_address_v4(dns_address),
+                    constants::DNS_PORT_NUM),
       ns_address_(ns_address), recv_buffer_() {
   receive();
 }
@@ -25,26 +28,40 @@ void Server::receive() {
     udp::endpoint sender_endpoint;
     socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
     BytePacketBuffer bpb{recv_buffer};
-    DnsPacket incoming{bpb};
-    DLOG(INFO) << "incoming: " << incoming;
-    if (!incoming.answers_.empty()) {
-      DLOG(INFO) << "Answers received";
-      handle_answer(incoming);
-    } else if (!incoming.questions_.empty()) {
-      DLOG(INFO) << "Query received";
-      auto &question = incoming.questions_[0];
-      int id = incoming.header_.id_;
-      questions_.insert({id, sender_endpoint});
-      lookup(question.name_, question.rtype_, id);
+    DnsPacket recvd{bpb};
+    DLOG(INFO) << "incoming from: " << sender_endpoint.address();
+    if (recvd.header_.rescode_ != DnsHeader::ResultCode::NOERROR) {
+      LOG(INFO) << "DnsPacket Error" << recvd;
+    }
+    if (!recvd.authorities_.empty() &&
+        recvd.header_.rescode_ == DnsHeader::ResultCode::NOERROR) {
+      // If authorities isn't empty then this is for a previous query
+      DLOG(INFO) << "Authority received " << recvd;
+      handle_authority(recvd);
+    } else if (!recvd.answers_.empty() &&
+               recvd.header_.rescode_ == DnsHeader::ResultCode::NOERROR) {
+      // If answers isn't empty then a previous query is complete and this is
+      // the final recursive resolve
+      DLOG(INFO) << "Answers received " << recvd;
+      handle_answer(recvd);
+    } else if (!recvd.questions_.empty()) {
+      // If this is a question but no authorities then this is a new query
+      DLOG(INFO) << "Query received " << recvd;
+      for (const auto &q : recvd.questions_) {
+        queries_.insert({q.name_, {recvd.header_.id_, sender_endpoint}});
+        lookup(recvd.header_.id_, q.name_, q.rtype_, dns_endpoint_);
+      }
     } else {
-      std::cout << incoming << std::endl;
+      DLOG(INFO) << "Dropping unsupported packet " << recvd;
+      std::cout << recvd << std::endl;
     }
   }
 }
 
-void Server::lookup(const std::string &qname, RecordType qtype, int id) {
+void Server::lookup(const uint16_t header_id, const std::string &qname,
+                    RecordType qtype, const udp::endpoint &server_endpoint) {
   DnsPacket packet{};
-  packet.header_.id_ = id;
+  packet.header_.id_ = header_id;
   packet.header_.recursion_desired_ = true;
   packet.header_.questions_ = 1;
   DnsQuestion question{qname, qtype, RecordClass::IN};
@@ -53,45 +70,52 @@ void Server::lookup(const std::string &qname, RecordType qtype, int id) {
   BytePacketBuffer bpb{arr};
   packet.write(bpb);
 
-  DLOG(INFO) << "lookup packet: " << packet;
-  socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint_);
-
-  // std::array<uint8_t, 512> recv_buffer{};
-  // udp::endpoint sender_endpoint;
-  // auto len = socket_.receive_from(asio::buffer(recv_buffer),
-  // sender_endpoint); DLOG(INFO) << "Packet of len " << len << "received";
-  // BytePacketBuffer recv_bpb{recv_buffer};
-  // DnsPacket received_packet{recv_bpb};
-  // DLOG(INFO) << "Packet Decoded";
-
-  // DLOG(INFO) << "received_packet: " << received_packet;
+  DLOG(INFO) << "lookup packet to: " << server_endpoint.address() << " "
+             << packet;
+  socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint);
 }
 
-void Server::recursive_lookup(const std::string &qname, RecordType qtype,
-                              int id) {
-  auto ns_addr = ns_address_;
-  while (true) {
-    DLOG(INFO) << "attempting lookup of: " << name_from_rtype(qtype) << " "
-               << qname << " with ns: " << ns_address_;
-    udp::endpoint endpoint(asio::ip::make_address_v4(ns_addr),
-                           constants::PORT_NUM);
+void Server::handle_authority(const DnsPacket &recvd) {
+  if (recvd.questions_.size() <= 0) {
+    // must have a question
+    // TODO: Send error to queryer?
+    // TODO: Could end up with a query that never leaves
+    return;
   }
+  auto &first_question = recvd.questions_[0];
+  auto &first_authority = recvd.authorities_[0];
+  auto &host = std::get<DnsRecord::NSData>(first_authority.data_).host;
+  udp::endpoint auth_endpoint(asio::ip::make_address_v4(host),
+                              constants::DNS_PORT_NUM);
+
+  lookup(recvd.header_.id_, first_question.name_, first_question.rtype_,
+         auth_endpoint);
 }
 
-void Server::handle_answer(const DnsPacket &answer) {
-  DnsPacket response{};
-  response.header_.id_ = answer.header_.id_;
-  response.header_.recursion_desired_ = true;
-  response.header_.recursion_available_ = true;
-  response.header_.response_ = true;
-  response.questions_ = answer.questions_;
-  response.answers_ = answer.answers_;
+void Server::handle_answer(const DnsPacket &recvd) {
+  auto &first_answer = recvd.answers_[0];
+  switch (first_answer.rtype_) {
+  case RecordType::A: {
+    DnsPacket response{};
+    response.header_.id_ = recvd.header_.id_;
+    response.header_.recursion_desired_ = true;
+    response.header_.recursion_available_ = true;
+    response.header_.response_ = true;
+    response.questions_ = recvd.questions_;
+    response.answers_ = recvd.answers_;
 
-  std::array<uint8_t, 512> buffer{};
-  BytePacketBuffer response_buffer{buffer};
-  response.write(response_buffer);
+    std::array<uint8_t, 512> buffer{};
+    BytePacketBuffer response_buffer{buffer};
+    response.write(response_buffer);
 
-  udp::endpoint endpoint = questions_.at(answer.header_.id_);
-  DLOG(INFO) << "answer: " << response;
-  socket_.send_to(asio::buffer(response_buffer.buffer_), endpoint);
+    std::string query_domain = recvd.questions_.at(0).name_;
+    udp::endpoint endpoint = std::get<udp::endpoint>(queries_.at(query_domain));
+    DLOG(INFO) << "answer to: " << endpoint.address() << " " << response;
+    socket_.send_to(asio::buffer(response_buffer.buffer_), endpoint);
+    queries_.erase(query_domain);
+    break;
+  }
+  default:
+    DLOG(INFO) << "Dropping unsupported answer" << recvd;
+  }
 }

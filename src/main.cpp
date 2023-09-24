@@ -74,17 +74,20 @@ bool AbslParseFlag(absl::string_view text, Ipv4Address *a, std::string *error) {
 
 // Taken from: https://abseil.io/docs/cpp/guides/flags
 ABSL_FLAG(PortNumber, port, PortNumber(44532), "What port to listen on");
-ABSL_FLAG(Ipv4Address, addr, Ipv4Address("8.8.8.8"), "What DNS server to use");
-ABSL_FLAG(Ipv4Address, ns_addr, Ipv4Address("198.41.0.4"), "What nameserver to use");
+ABSL_FLAG(Ipv4Address, dns_addr, Ipv4Address("8.8.8.8"),
+          "What DNS server to use");
+ABSL_FLAG(Ipv4Address, ns_addr, Ipv4Address("198.41.0.4"),
+          "What nameserver to use");
 
 int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);
   absl::ParseCommandLine(argc, argv);
   FLAGS_logtostderr = 1;
   int port = absl::GetFlag(FLAGS_port).port;
-  std::string address = absl::GetFlag(FLAGS_addr).addr;
+  std::string address = absl::GetFlag(FLAGS_dns_addr).addr;
   std::string ns_address = absl::GetFlag(FLAGS_ns_addr).addr;
-  LOG(INFO) << "Starting server with port: " << port << " address: " << address << " ns_address: " << ns_address;
+  LOG(INFO) << "Starting server with port: " << port << " address: " << address
+            << " ns_address: " << ns_address;
   asio::io_context io;
   Server server{io, port, address, ns_address};
   try {

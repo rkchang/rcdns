@@ -16,6 +16,11 @@ cc_library(
         "@com_github_google_glog//:glog",
         "@my-asio//:asio",
     ],
+    copts = [
+    "-Wpedantic",
+    "-Wall",
+    "-Wextra",
+    ],
 )
 
 cc_library(
@@ -33,5 +38,10 @@ cc_library(
         "@com_github_google_glog//:glog",
         "@my-asio//:asio",
         "@com_google_googletest//:gtest_main",
+    ],
+    copts = [
+    "-Wpedantic",
+    "-Wall",
+    "-Wextra",
     ],
 )

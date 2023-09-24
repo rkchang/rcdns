@@ -4,27 +4,32 @@
 
 #include <stdexcept>
 
-DnsQuestion::DnsQuestion(std::string name, RecordType rtype, RecordClass rclass) : name_(name), rtype_(rtype), rclass_(rclass) {}
+DnsQuestion::DnsQuestion(std::string name, RecordType rtype, RecordClass rclass)
+    : name_(name), rtype_(rtype), rclass_(rclass) {}
 
-DnsQuestion::DnsQuestion(BytePacketBuffer &buffer) {
+bool DnsQuestion::from_buffer(BytePacketBuffer &buffer) {
   if (auto v = buffer.read_qname()) {
     name_ = *v;
   } else {
-    throw std::runtime_error("Invalid qname");
+    LOG(WARNING) << "Invalid qname";
+    return false;
   }
   if (auto v = rtype_from_num(buffer.read_u16())) {
     rtype_ = *v;
   } else {
-    throw std::runtime_error("Invalid record type");
+    LOG(WARNING) << "Invalid record type";
+    return false;
   }
   if (rtype_ == RecordType::OPT) {
     LOG(INFO) << "Pseudo resource records not supported";
-    return;
+    return true;
   }
   if (buffer.read_u16() != static_cast<uint16_t>(RecordClass::IN)) {
-    throw std::runtime_error("Invalid record class");
+    LOG(WARNING) << "Invalid record class";
+    return false;
   }
   rclass_ = RecordClass::IN;
+  return true;
 }
 
 void DnsQuestion::write(BytePacketBuffer &buffer) const {
