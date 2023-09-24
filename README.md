@@ -3,7 +3,7 @@
 This is a work in progress DNS server I wrote to learn more about DNS. It's
 written in C++17 and targets Ubuntu 22.04.
 
-Demo:
+Demo with opt build mode:
 
 ```
 ~/dev/rcdns main
@@ -85,6 +85,12 @@ Clang-tidy is run on each build using the configuration provided in
 .clang-tidy. -->
 
 ### Bazel
+
+Build optimized binary:
+
+```
+bazel build  --compilation_mode=opt --features=asan --features=ubsan //src:rcdns
+```
 
 Build debug binary:
 
