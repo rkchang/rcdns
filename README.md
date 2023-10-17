@@ -10,7 +10,6 @@ Demo with opt build mode:
 ❯ ./bazel-bin/src/rcdns&
 [1] 492513
 I20230924 01:39:02.572237 492513 main.cpp:89] Starting server with port: 54532 dns_address: 8.8.8.8 ns_address: 198.41.0.4
-~/dev/rcdns main
 ❯ dig @127.0.0.1 -p 54532 +noedns www.google.com
 
 ; <<>> DiG 9.18.12-0ubuntu0.22.04.3-Ubuntu <<>> @127.0.0.1 -p 54532 +noedns www.google.com
