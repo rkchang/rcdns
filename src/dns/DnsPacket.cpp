@@ -1,5 +1,5 @@
 #include "DnsPacket.hpp"
-#include <glog/logging.h>
+#include "absl/log/log.h"
 
 #include <ostream>
 

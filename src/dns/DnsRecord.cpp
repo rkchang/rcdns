@@ -1,7 +1,7 @@
 #include "DnsRecord.hpp"
 #include "RecordType.hpp"
 
-#include <glog/logging.h>
+#include "absl/log/log.h"
 
 #include <stdexcept>
 #include <string>

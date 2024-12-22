@@ -1,8 +1,6 @@
 #include "DnsQuestion.hpp"
 
-#include <glog/logging.h>
-
-#include <stdexcept>
+#include "absl/log/log.h"
 
 DnsQuestion::DnsQuestion(std::string name, RecordType rtype, RecordClass rclass)
     : name_(name), rtype_(rtype), rclass_(rclass) {}

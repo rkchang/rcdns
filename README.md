@@ -49,9 +49,7 @@ lld
 ## Libraries
 
 ```
-ASIO (non-Boost)
 googletest
-glog
 abseil
 ```
 

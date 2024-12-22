@@ -1,13 +1,15 @@
 #pragma once
-#include <asio.hpp>
 #include <cstdint>
 #include <ostream>
 #include <string>
 #include <variant>
+#include <boost/asio.hpp>
 
 #include "BytePacketBuffer.hpp"
 #include "RecordClass.hpp"
 #include "RecordType.hpp"
+
+namespace asio = boost::asio;
 
 class DnsRecord {
 private:

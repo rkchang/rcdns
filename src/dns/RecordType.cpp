@@ -1,6 +1,6 @@
 #include "RecordType.hpp"
 
-#include <glog/logging.h>
+#include "absl/log/log.h"
 
 std::optional<RecordType> rtype_from_num(int num) {
   if (num < static_cast<int>(RecordType::UNKNOWN) ||

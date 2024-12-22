@@ -1,11 +1,11 @@
 #pragma once
 
 #include <array>
-#include <asio.hpp>
 #include <cstdint>
 #include <string>
 
 #include "dns/DnsPacket.hpp"
+#include <boost/asio.hpp>
 
 using asio::ip::udp;
 class Server {

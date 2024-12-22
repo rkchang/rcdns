@@ -1,5 +1,3 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
-
 cc_library(
     name = "dns_representation",
     srcs = glob(
@@ -13,8 +11,7 @@ cc_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_google_glog//:glog",
-        "@my-asio//:asio",
+        "@abseil-cpp//absl/log",
     ],
     copts = [
     "-Wpedantic",
@@ -35,9 +32,9 @@ cc_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_google_glog//:glog",
-        "@my-asio//:asio",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
     copts = [
     "-Wpedantic",

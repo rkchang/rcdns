@@ -1,8 +1,6 @@
 #include "Server.hpp"
 #include "Constants.hpp"
 
-#include <glog/logging.h>
-
 #include <iostream>
 #include <stdexcept>
 #include <variant>
@@ -10,6 +8,8 @@
 #include "dns/BytePacketBuffer.hpp"
 #include "dns/DnsPacket.hpp"
 #include "dns/DnsRecord.hpp"
+
+namespace asio = boost::asio;
 
 Server::Server(asio::io_context &io, int port, std::string &dns_address,
                std::string &ns_address)

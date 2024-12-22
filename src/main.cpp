@@ -1,14 +1,10 @@
-#include <glog/logging.h>
-
-#include <array>
 #include <cstdint>
-#include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "Server.hpp"
+#include "absl/log/log.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/marshalling.h"
 #include "absl/flags/parse.h"
@@ -63,7 +59,7 @@ bool AbslParseFlag(absl::string_view text, Ipv4Address *a, std::string *error) {
     return false;
   }
   for (const auto &elem : v) {
-    int32_t octet;
+    int32_t octet = 0;
     if (!absl::SimpleAtoi(elem, &octet) || octet > 255 || octet < 0) {
       *error = "octet: " + elem + " not in range [0,255]";
       return false;
