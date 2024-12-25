@@ -13,6 +13,7 @@ cc_binary(
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings",
+        "@boost.asio",
     ],
     copts = [
     "-Wpedantic",

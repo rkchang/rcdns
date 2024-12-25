@@ -1,1 +1,9 @@
 build --cxxopt="-std=c++17"
+
+build:ausan --strip=never
+build:ausan --copt -fsanitize=address,undefined
+build:ausan --copt -DADDRESS_SANITIZER
+build:ausan --copt -O1
+build:ausan --copt -g
+build:ausan --copt -fno-omit-frame-pointer
+build:ausan --linkopt -fsanitize=address,undefined

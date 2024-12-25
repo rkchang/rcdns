@@ -76,9 +76,7 @@ ABSL_FLAG(Ipv4Address, ns_addr, Ipv4Address("198.41.0.4"),
           "What nameserver to use");
 
 int main(int argc, char *argv[]) {
-  google::InitGoogleLogging(argv[0]);
   absl::ParseCommandLine(argc, argv);
-  FLAGS_logtostderr = 1;
   int port = absl::GetFlag(FLAGS_port).port;
   std::string address = absl::GetFlag(FLAGS_dns_addr).addr;
   std::string ns_address = absl::GetFlag(FLAGS_ns_addr).addr;

@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 
 #include "dns/DnsPacket.hpp"
 #include <boost/asio.hpp>

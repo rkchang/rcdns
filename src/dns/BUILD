@@ -12,6 +12,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@abseil-cpp//absl/log",
+        "@boost.asio",
     ],
     copts = [
     "-Wpedantic",
@@ -33,6 +34,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@abseil-cpp//absl/log",
+        "@boost.asio",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
