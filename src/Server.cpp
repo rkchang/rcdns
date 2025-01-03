@@ -1,122 +1,82 @@
 #include "Server.hpp"
 #include "Constants.hpp"
-
 #include "absl/log/log.h"
-#include <iostream>
-#include <stdexcept>
-#include <variant>
-
 #include "dns/BytePacketBuffer.hpp"
 #include "dns/DnsPacket.hpp"
-#include "dns/DnsRecord.hpp"
+#include <array>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+using namespace constants;
 
-namespace asio = boost::asio;
-
-Server::Server(asio::io_context &io, int port, std::string &dns_address,
-               std::string &ns_address)
-    : socket_(io, udp::endpoint(udp::v4(), port)),
-      ns_endpoint_(asio::ip::make_address_v4(ns_address),
-                   constants::DNS_PORT_NUM),
-      dns_endpoint_(asio::ip::make_address_v4(dns_address),
-                    constants::DNS_PORT_NUM),
-      ns_address_(ns_address), recv_buffer_() {
-  receive();
+Server::Server(int port, std::string &src_address, std::string &ns_address) {
+  struct addrinfo addrinfo_hints = {};
+  // struct addrinfo *ns_addrinfo_res = nullptr;
+  struct addrinfo *local_addrinfo_res = nullptr;
+  addrinfo_hints.ai_family = AF_INET;      // IPv4
+  addrinfo_hints.ai_socktype = SOCK_DGRAM; // udp
+  // TODO(rkchang): check errcode and other results of res
+  // getaddrinfo for the nameserver
+  //   int ret = getaddrinfo(ns_address.data(), "53", &addrinfo_hints,
+  //   &ns_addrinfo_res); if (ret != 0) {
+  //     LOG(ERROR) << "getaddrinfo() failed: " << gai_strerror(ret);
+  //   }
+  // TODO(rkchang): can i reuse the getaddrinfos?
+  // getaddrinfo for when we bind
+  int ret = getaddrinfo(src_address.data(), std::to_string(port).data(),
+                        &addrinfo_hints, &local_addrinfo_res);
+  if (ret != 0) {
+    LOG(ERROR) << "getaddrinfo() failed: " << gai_strerror(ret);
+  }
+  // Create our ns_socket_
+  // ns_socket_ = socket(ns_addrinfo_res->ai_family,
+  // ns_addrinfo_res->ai_socktype,
+  //                     ns_addrinfo_res->ai_protocol);
+  // Create our recv_socket_
+  recv_socket_ =
+      socket(local_addrinfo_res->ai_family, local_addrinfo_res->ai_socktype,
+             local_addrinfo_res->ai_protocol);
+  if (recv_socket_ == -1) {
+    // TODO: List the servinfo
+    DLOG(INFO) << "Socket creation failed";
+  }
+  // bind to our desired port and source address
+  if (bind(recv_socket_, local_addrinfo_res->ai_addr,
+           local_addrinfo_res->ai_addrlen) != 0) {
+    LOG(WARNING) << "bind() failed";
+  }
 }
 
-void Server::receive() {
+// TODO: make reference
+std::string Server::get_addr_str(struct sockaddr_storage *storage) {
+  auto *sock_addr = (struct sockaddr *)storage;
+  const void *in_addr = nullptr;
+  if (sock_addr->sa_family == AF_INET) {
+    auto *sock_addr_in = (struct sockaddr_in *)storage;
+    in_addr = &(sock_addr_in->sin_addr);
+  } else {
+    auto *sock_addr_in = (struct sockaddr_in6 *)storage;
+    in_addr = &(sock_addr_in->sin6_addr);
+  }
+  std::array<char, INET6_ADDRSTRLEN> addr_buf{};
+  const char *addr =
+      inet_ntop(storage->ss_family, in_addr, addr_buf.data(), addr_buf.size());
+  std::string saddr = addr;
+  return saddr;
+}
+
+void Server::run() {
+  struct sockaddr_storage their_addr = {};
   while (true) {
-    std::array<uint8_t, 512> recv_buffer{};
-    udp::endpoint sender_endpoint;
-    socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
+    std::array<uint8_t, DNS_PACKET_SIZE> recv_buffer{};
+    socklen_t addr_len = sizeof their_addr;
+    DLOG(INFO) << "Waiting for message";
+    size_t num_bytes =
+        recvfrom(recv_socket_, recv_buffer.data(), DNS_PACKET_SIZE, 0,
+                 (struct sockaddr *)&their_addr, &addr_len);
+    std::string addr = get_addr_str(&their_addr);
+    DLOG(INFO) << "Received packet size: " << num_bytes << " from: " << addr;
     BytePacketBuffer bpb{recv_buffer};
     DnsPacket recvd{bpb};
-    DLOG(INFO) << "incoming from: " << sender_endpoint.address();
-    if (recvd.header_.rescode_ != DnsHeader::ResultCode::NOERROR) {
-      LOG(INFO) << "DnsPacket Error" << recvd;
-    }
-    if (!recvd.authorities_.empty() &&
-        recvd.header_.rescode_ == DnsHeader::ResultCode::NOERROR) {
-      // If authorities isn't empty then this is for a previous query
-      DLOG(INFO) << "Authority received " << recvd;
-      handle_authority(recvd);
-    } else if (!recvd.answers_.empty() &&
-               recvd.header_.rescode_ == DnsHeader::ResultCode::NOERROR) {
-      // If answers isn't empty then a previous query is complete and this is
-      // the final recursive resolve
-      DLOG(INFO) << "Answers received " << recvd;
-      handle_answer(recvd);
-    } else if (!recvd.questions_.empty()) {
-      // If this is a question but no authorities then this is a new query
-      DLOG(INFO) << "Query received " << recvd;
-      for (const auto &q : recvd.questions_) {
-        queries_.insert({q.name_, {recvd.header_.id_, sender_endpoint}});
-        lookup(recvd.header_.id_, q.name_, q.rtype_, dns_endpoint_);
-      }
-    } else {
-      DLOG(INFO) << "Dropping unsupported packet " << recvd;
-      std::cout << recvd << std::endl;
-    }
-  }
-}
-
-void Server::lookup(const uint16_t header_id, const std::string &qname,
-                    RecordType qtype, const udp::endpoint &server_endpoint) {
-  DnsPacket packet{};
-  packet.header_.id_ = header_id;
-  packet.header_.recursion_desired_ = true;
-  packet.header_.questions_ = 1;
-  DnsQuestion question{qname, qtype, RecordClass::IN};
-  packet.questions_.push_back(question);
-  std::array<uint8_t, 512> arr{};
-  BytePacketBuffer bpb{arr};
-  packet.write(bpb);
-
-  DLOG(INFO) << "lookup packet to: " << server_endpoint.address() << " "
-             << packet;
-  socket_.send_to(asio::buffer(bpb.buffer_), server_endpoint);
-}
-
-void Server::handle_authority(const DnsPacket &recvd) {
-  if (recvd.questions_.size() <= 0) {
-    // must have a question
-    // TODO: Send error to queryer?
-    // TODO: Could end up with a query that never leaves
-    return;
-  }
-  auto &first_question = recvd.questions_[0];
-  auto &first_authority = recvd.authorities_[0];
-  auto &host = std::get<DnsRecord::NSData>(first_authority.data_).host;
-  udp::endpoint auth_endpoint(asio::ip::make_address_v4(host),
-                              constants::DNS_PORT_NUM);
-
-  lookup(recvd.header_.id_, first_question.name_, first_question.rtype_,
-         auth_endpoint);
-}
-
-void Server::handle_answer(const DnsPacket &recvd) {
-  auto &first_answer = recvd.answers_[0];
-  switch (first_answer.rtype_) {
-  case RecordType::A: {
-    DnsPacket response{};
-    response.header_.id_ = recvd.header_.id_;
-    response.header_.recursion_desired_ = true;
-    response.header_.recursion_available_ = true;
-    response.header_.response_ = true;
-    response.questions_ = recvd.questions_;
-    response.answers_ = recvd.answers_;
-
-    std::array<uint8_t, 512> buffer{};
-    BytePacketBuffer response_buffer{buffer};
-    response.write(response_buffer);
-
-    std::string query_domain = recvd.questions_.at(0).name_;
-    udp::endpoint endpoint = std::get<udp::endpoint>(queries_.at(query_domain));
-    DLOG(INFO) << "answer to: " << endpoint.address() << " " << response;
-    socket_.send_to(asio::buffer(response_buffer.buffer_), endpoint);
-    queries_.erase(query_domain);
-    break;
-  }
-  default:
-    DLOG(INFO) << "Dropping unsupported answer" << recvd;
   }
 }

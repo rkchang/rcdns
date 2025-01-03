@@ -1,33 +1,17 @@
 #pragma once
-
 #include <array>
-#include <cstdint>
-#include <string>
-#include <unordered_map>
-
-#include "dns/DnsPacket.hpp"
 #include <boost/asio.hpp>
+#include <string>
 
-using asio::ip::udp;
 class Server {
-private:
-  void handle_authority(const DnsPacket &answer);
-  void handle_answer(const DnsPacket &answer);
-  void lookup(const uint16_t header_id, const std::string &qname,
-              RecordType qtype, const udp::endpoint &server_endpoint);
-  void send_formerr(const DnsPacket &request);
-
 public:
-  Server(asio::io_context &io_context, int port, std::string &address,
-         std::string &ns_address);
+  Server(int port, std::string &src_address, std::string &ns_address);
+  void run();
+private:
   void receive();
   void respond();
-  udp::socket socket_;
-  udp::endpoint remote_endpoint_;
-  udp::endpoint ns_endpoint_;
-  udp::endpoint dns_endpoint_;
-  std::string ns_address_;
+  std::string get_addr_str(struct sockaddr_storage *);
   std::array<uint8_t, 512> recv_buffer_;
-  // query domain -> (query header id, inquirer endpoint)
-  std::unordered_map<std::string, std::pair<int, udp::endpoint>> queries_;
+  int recv_socket_;
+  int ns_socket_;
 };

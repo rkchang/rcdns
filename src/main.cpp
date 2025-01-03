@@ -4,10 +4,10 @@
 #include <vector>
 
 #include "Server.hpp"
-#include "absl/log/log.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/marshalling.h"
 #include "absl/flags/parse.h"
+#include "absl/log/log.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_split.h"
 #include "dns/BytePacketBuffer.hpp"
@@ -26,8 +26,8 @@ struct Ipv4Address {
   std::string addr;
 };
 
-// // Taken from: https://abseil.io/docs/cpp/guides/flags
-// // Returns a textual flag value corresponding to the PortNumber `p`.
+// Taken from: https://abseil.io/docs/cpp/guides/flags
+// Returns a textual flag value corresponding to the PortNumber `p`.
 std::string AbslUnparseFlag(PortNumber p) {
   // Delegate to the usual unparsing for int.
   return absl::UnparseFlag(p.port);
@@ -70,22 +70,25 @@ bool AbslParseFlag(absl::string_view text, Ipv4Address *a, std::string *error) {
 
 // Taken from: https://abseil.io/docs/cpp/guides/flags
 ABSL_FLAG(PortNumber, port, PortNumber(54532), "What port to listen on");
-ABSL_FLAG(Ipv4Address, dns_addr, Ipv4Address("8.8.8.8"),
-          "What DNS server to use");
+ABSL_FLAG(Ipv4Address, dns_addr, Ipv4Address("8.8.8.8"), "What dns address to use");
+ABSL_FLAG(Ipv4Address, src_addr, Ipv4Address("0.0.0.0"),
+          "What source address to use");
 ABSL_FLAG(Ipv4Address, ns_addr, Ipv4Address("198.41.0.4"),
           "What nameserver to use");
 
 int main(int argc, char *argv[]) {
   absl::ParseCommandLine(argc, argv);
   int port = absl::GetFlag(FLAGS_port).port;
-  std::string address = absl::GetFlag(FLAGS_dns_addr).addr;
+  std::string dns_address = absl::GetFlag(FLAGS_dns_addr).addr;
+  std::string src_address = absl::GetFlag(FLAGS_src_addr).addr;
   std::string ns_address = absl::GetFlag(FLAGS_ns_addr).addr;
   LOG(INFO) << "Starting server with port: " << port
-            << " dns_address: " << address << " ns_address: " << ns_address;
-  asio::io_context io;
-  Server server{io, port, address, ns_address};
+            << " dns_address: " << dns_address << " src_address: " << src_address
+            << " ns_address: " << ns_address;
+  LOG(INFO) << "Server initialized";
+  Server server{port, src_address, ns_address};
   try {
-    io.run();
+    server.run();
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
   }
