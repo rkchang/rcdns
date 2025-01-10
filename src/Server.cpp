@@ -1,7 +1,7 @@
 #include "Server.hpp"
-#include "Constants.hpp"
+#include <iostream>
 #include "absl/log/log.h"
-#include "dns/BytePacketBuffer.hpp"
+#include "dns/Constants.hpp"
 #include "dns/DnsPacket.hpp"
 #include <array>
 #include <netdb.h>
@@ -76,7 +76,8 @@ void Server::run() {
                  (struct sockaddr *)&their_addr, &addr_len);
     std::string addr = get_addr_str(&their_addr);
     DLOG(INFO) << "Received packet size: " << num_bytes << " from: " << addr;
-    BytePacketBuffer bpb{recv_buffer};
-    DnsPacket recvd{bpb};
+    DnsPacket recvd{};
+    recvd.from_buffer(recv_buffer);
+    std::cout << recvd << std::endl;
   }
 }

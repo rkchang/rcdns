@@ -69,7 +69,7 @@ bool AbslParseFlag(absl::string_view text, Ipv4Address *a, std::string *error) {
 }
 
 // Taken from: https://abseil.io/docs/cpp/guides/flags
-ABSL_FLAG(PortNumber, port, PortNumber(54532), "What port to listen on");
+ABSL_FLAG(PortNumber, port, PortNumber(2053), "What port to listen on");
 ABSL_FLAG(Ipv4Address, dns_addr, Ipv4Address("8.8.8.8"), "What dns address to use");
 ABSL_FLAG(Ipv4Address, src_addr, Ipv4Address("0.0.0.0"),
           "What source address to use");

@@ -90,12 +90,9 @@ bool DnsRecord::from_buffer(BytePacketBuffer &buffer) {
     data_ = AAAAData{ip};
     break;
   }
-  case RecordType::OPT: {
-    LOG(WARNING) << "Unhandled record type encountered, dropping";
-    return false;
-    break;
-  }
+  case RecordType::OPT:
   case RecordType::UNKNOWN: {
+    LOG(WARNING) << "Unknown record type encountered, skipping";
     buffer.step(data_len_);
     break;
   }

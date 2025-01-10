@@ -1,5 +1,5 @@
 #include "AsyncServer.hpp"
-#include "Constants.hpp"
+#include "dns/Constants.hpp"
 
 #include "absl/log/log.h"
 #include <iostream>
@@ -29,7 +29,8 @@ void AsyncServer::receive() {
     udp::endpoint sender_endpoint;
     socket_.receive_from(asio::buffer(recv_buffer), sender_endpoint);
     BytePacketBuffer bpb{recv_buffer};
-    DnsPacket recvd{bpb};
+    DnsPacket recvd{};
+    recvd.from_buffer(bpb);
     DLOG(INFO) << "incoming from: " << sender_endpoint.address();
     if (recvd.header_.rescode_ != DnsHeader::ResultCode::NOERROR) {
       LOG(INFO) << "DnsPacket Error" << recvd;

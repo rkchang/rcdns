@@ -61,19 +61,19 @@ abseil
 Build optimized binary:
 
 ```
-bazel build  --compilation_mode=opt --features=asan --features=ubsan //src:rcdns
+bazel build  --compilation_mode=opt --features=ausan //src:rcdns
 ```
 
 Build debug binary:
 
 ```
-bazel build  --compilation_mode=dbg --features=asan --features=ubsan //src:rcdns
+bazel build  --compilation_mode=dbg --features=ausan //src:rcdns
 ```
 
 Build tests:
 
 ```
-bazel build  --compilation_mode=dbg --features=asan --features=ubsan //src:all_tests
+bazel build  --compilation_mode=dbg --features=ausan //src:all_tests
 ```
 
 # Running the project
@@ -86,7 +86,7 @@ project
 ```
 ./bazel-bin/src/rcdns
 OR
-bazel run  --compilation_mode=dbg --features=asan --features=ubsan //src:rcdns
+bazel run  --compilation_mode=dbg --features=ausan //src:rcdns
 ```
 
 ## Running tests
@@ -96,7 +96,7 @@ Tests can be run by executing the `all_tests` binary in the build directory.
 ```
 ./bazel-bin/src/all_tests
 OR
-bazel run  --compilation_mode=dbg --features=asan --features=ubsan //src:all_tests
+bazel run  --compilation_mode=dbg --features=ausan //src:all_tests
 ```
 
 ## Compile commands

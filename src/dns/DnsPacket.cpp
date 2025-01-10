@@ -7,7 +7,14 @@
 #include "DnsHeader.hpp"
 #include "DnsRecord.hpp"
 
-DnsPacket::DnsPacket(BytePacketBuffer &buffer) : header_(buffer) {
+void DnsPacket::from_buffer(std::array<uint8_t, constants::DNS_PACKET_SIZE> &buffer) {
+  BytePacketBuffer bpb {buffer};
+  from_buffer(bpb);
+}
+
+void DnsPacket::from_buffer(BytePacketBuffer &buffer) {
+  DnsHeader header {buffer};
+  header_ = header;
   for (auto i = 0; i < header_.questions_; i++) {
     DnsQuestion qtion{};
     if (!qtion.from_buffer(buffer)) {

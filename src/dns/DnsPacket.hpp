@@ -1,18 +1,19 @@
 #pragma once
 
 #include <ostream>
-#include <string>
 #include <vector>
 
 #include "BytePacketBuffer.hpp"
 #include "DnsHeader.hpp"
 #include "DnsQuestion.hpp"
 #include "DnsRecord.hpp"
+#include "Constants.hpp"
 
 class DnsPacket {
 public:
   DnsPacket() = default;
-  explicit DnsPacket(BytePacketBuffer &buffer);
+  void from_buffer(BytePacketBuffer &buffer);
+  void from_buffer(std::array<uint8_t, constants::DNS_PACKET_SIZE> &buffer);
   void write(BytePacketBuffer &buffer);
   friend std::ostream &operator<<(std::ostream &os, const DnsPacket &packet);
 
